@@ -10,18 +10,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/game/start", async (req: Request, res: Response) => {
     try {
       // Validate input
-      const { mySeatNumber, partnerSeatNumber } = gameSetupSchema.parse(req.body);
+      const { myName, mySeatNumber, partnerName, partnerSeatNumber } = gameSetupSchema.parse(req.body);
       
       // Get or create both users
       let user1 = await storage.getUserBySeatNumber(mySeatNumber);
       let user2 = await storage.getUserBySeatNumber(partnerSeatNumber);
       
       if (!user1) {
-        user1 = await storage.createUser({ seatNumber: mySeatNumber });
+        user1 = await storage.createUser({ name: myName, seatNumber: mySeatNumber });
+      } else {
+        // Update name if user exists but name might have changed
+        user1 = await storage.updateUserName(user1.id, myName);
       }
       
       if (!user2) {
-        user2 = await storage.createUser({ seatNumber: partnerSeatNumber });
+        user2 = await storage.createUser({ name: partnerName, seatNumber: partnerSeatNumber });
+      } else {
+        // Update name if user exists but name might have changed
+        user2 = await storage.updateUserName(user2.id, partnerName);
       }
       
       // Check if there's an active game session

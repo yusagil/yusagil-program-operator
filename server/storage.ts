@@ -7,6 +7,7 @@ export interface IStorage {
   // User operations
   createUser(user: InsertUser): Promise<User>;
   getUserBySeatNumber(seatNumber: number): Promise<User | undefined>;
+  updateUserName(userId: number, name: string): Promise<User>;
   
   // Game session operations
   createGameSession(session: InsertGameSession): Promise<GameSession>;
@@ -54,6 +55,17 @@ export class MemStorage implements IStorage {
 
   async getUserBySeatNumber(seatNumber: number): Promise<User | undefined> {
     return Array.from(this.users.values()).find(user => user.seatNumber === seatNumber);
+  }
+
+  async updateUserName(userId: number, name: string): Promise<User> {
+    const user = this.users.get(userId);
+    if (!user) {
+      throw new Error(`User not found with id ${userId}`);
+    }
+    
+    const updatedUser = { ...user, name };
+    this.users.set(userId, updatedUser);
+    return updatedUser;
   }
   
   // Game session operations

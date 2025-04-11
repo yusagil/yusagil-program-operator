@@ -51,10 +51,12 @@ export const insertAnswerSchema = createInsertSchema(answers).pick({
 export const seatNumberSchema = z.number().int().min(1).max(12);
 
 export const gameSetupSchema = z.object({
+  myName: z.string().min(1, "이름을 입력해주세요"),
   mySeatNumber: seatNumberSchema,
+  partnerName: z.string().min(1, "짝궁의 이름을 입력해주세요"),
   partnerSeatNumber: seatNumberSchema,
 }).refine(data => data.mySeatNumber !== data.partnerSeatNumber, {
-  message: "Your seat number and partner's seat number must be different",
+  message: "자리 번호가 같을 수 없습니다",
   path: ["partnerSeatNumber"],
 });
 
