@@ -40,7 +40,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         success: true,
         gameSession: {
           id: gameSession.id,
-          userId: user1.id
+          userId: user1.id,
+          seatNumber: mySeatNumber
         }
       });
     } catch (error) {

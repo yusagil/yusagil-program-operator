@@ -2,13 +2,15 @@ import { pgTable, text, serial, integer, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-// User model to represent a participant by seat number
+// User model to represent a participant by name
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
-  seatNumber: integer("seat_number").notNull().unique(),
+  name: text("name").notNull(),
+  seatNumber: integer("seat_number").notNull(),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
+  name: true,
   seatNumber: true,
 });
 

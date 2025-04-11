@@ -11,6 +11,7 @@ export async function startGame(gameSetup: GameSetup): Promise<ApiResponse<{
   gameSession: {
     id: number;
     userId: number;
+    seatNumber: number;
   }
 }>> {
   const res = await apiRequest("POST", "/api/game/start", gameSetup);

@@ -50,7 +50,7 @@ const HomePage = () => {
       });
 
       if (result.success) {
-        navigate(`/game/${result.gameSession.id}/${result.gameSession.userId}`);
+        navigate(`/game/${result.gameSession.id}/${result.gameSession.userId}?seatNumber=${result.gameSession.seatNumber}`);
       } else {
         toast({
           title: "오류 발생",
