@@ -59,7 +59,7 @@ const QuestionForm = ({
             ref={partnerGuessRef}
             type="text"
             className="w-full p-3 bg-gray-100"
-            placeholder="예상 답변을 입력하세요"
+            placeholder="짝궁이 어떻게 답변할지 예상해 입력하세요"
             value={partnerGuess}
             onChange={(e) => onChange(myAnswer, e.target.value)}
           />

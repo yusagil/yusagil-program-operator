@@ -11,6 +11,8 @@ export async function startGame(gameSetup: GameSetup): Promise<ApiResponse<{
   gameSession: {
     id: number;
     userId: number;
+    userName: string;
+    partnerName: string;
     seatNumber: number;
   }
 }>> {

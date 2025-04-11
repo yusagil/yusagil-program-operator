@@ -64,7 +64,13 @@ const HomePage = () => {
       });
 
       if (result.success) {
-        navigate(`/game/${result.gameSession.id}/${result.gameSession.userId}?seatNumber=${result.gameSession.seatNumber}`);
+        const queryParams = new URLSearchParams({
+          userName: result.gameSession.userName,
+          partnerName: result.gameSession.partnerName,
+          seatNumber: result.gameSession.seatNumber.toString()
+        }).toString();
+        
+        navigate(`/game/${result.gameSession.id}/${result.gameSession.userId}?${queryParams}`);
       } else {
         toast({
           title: "오류 발생",

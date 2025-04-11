@@ -16,10 +16,23 @@ const QuestionPage = () => {
     Array(10).fill({ myAnswer: "", partnerGuess: "" })
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [partnerName, setPartnerName] = useState<string>("");
   
   // Extract params
   const gameSessionId = parseInt(params.gameSessionId);
   const userId = parseInt(params.userId);
+  
+  // Get query params
+  const searchParams = new URLSearchParams(window.location.search);
+  const userName = searchParams.get("userName") || "";
+  const partnerNameParam = searchParams.get("partnerName") || "";
+  
+  // Set partner name
+  useEffect(() => {
+    if (partnerNameParam) {
+      setPartnerName(partnerNameParam);
+    }
+  }, [partnerNameParam]);
   
   // Check for invalid params
   useEffect(() => {
@@ -113,7 +126,8 @@ const QuestionPage = () => {
     <div className="fade-in">
       <div className="mb-6 text-center">
         <div className="flex items-center justify-between mb-2">
-          <div className="text-sm text-gray-500">나: {params.userId}번 자리</div>
+          <div className="text-sm text-gray-500">내 이름: {userName}</div>
+          <div className="text-sm text-gray-500">짝궁 이름: {partnerName}</div>
         </div>
         <h2 className="text-xl font-bold">문제 {currentQuestion}/10</h2>
         <Progress 
