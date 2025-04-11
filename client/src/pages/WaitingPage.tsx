@@ -10,10 +10,20 @@ const WaitingPage = () => {
   const { toast } = useToast();
   
   const [isPolling, setIsPolling] = useState(true);
+  const [partnerName, setPartnerName] = useState<string>("");
   
   // Extract params
   const gameSessionId = parseInt(params.gameSessionId);
   const userId = parseInt(params.userId);
+  
+  // Get partner name from query params
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const partnerNameParam = searchParams.get("partnerName");
+    if (partnerNameParam) {
+      setPartnerName(partnerNameParam);
+    }
+  }, []);
   
   // Check for invalid params
   useEffect(() => {
@@ -82,7 +92,9 @@ const WaitingPage = () => {
         <CardContent className="p-8 flex flex-col items-center">
           <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-primary border-solid mb-6"></div>
           <h2 className="text-xl font-bold mb-3">답변 제출 완료!</h2>
-          <p className="text-gray-600 mb-4">짝궁이 아직 제출 중입니다.</p>
+          <p className="text-gray-600 mb-4">
+            <span className="font-bold">{partnerName}</span>님이 아직 제출 중입니다.
+          </p>
           <p className="text-gray-600">잠시만 기다려주세요...</p>
         </CardContent>
       </Card>

@@ -102,8 +102,11 @@ const QuestionPage = () => {
       });
       
       if (result.success) {
-        // Navigate to waiting page
-        navigate(`/game/${gameSessionId}/${userId}/waiting`);
+        // Navigate to waiting page with partner name
+        const queryParams = new URLSearchParams({
+          partnerName
+        }).toString();
+        navigate(`/game/${gameSessionId}/${userId}/waiting?${queryParams}`);
       } else {
         toast({
           title: "제출 오류",

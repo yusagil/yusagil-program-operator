@@ -35,7 +35,7 @@ const ResultsPage = () => {
         const response = await getGameResults(gameSessionId, userId);
         
         if (response.success && response.status === "complete") {
-          setResults(response.results);
+          setResults(response.results || null);
         } else {
           if (response.status === "waiting") {
             // Still waiting for partner to complete
