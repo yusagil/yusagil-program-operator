@@ -184,6 +184,8 @@ export class MemStorage implements IStorage {
       gameSessionId,
       userId,
       partnerId,
+      userName: user.name,
+      partnerName: partner.name,
       userSeatNumber: user.seatNumber,
       partnerSeatNumber: partner.seatNumber,
       answerPairs,

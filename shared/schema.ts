@@ -97,6 +97,8 @@ export type GameResult = {
   gameSessionId: number;
   userId: number;
   partnerId: number;
+  userName: string;
+  partnerName: string;
   userSeatNumber: number;
   partnerSeatNumber: number;
   answerPairs: AnswerPair[];

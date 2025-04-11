@@ -86,6 +86,9 @@ const ResultsPage = () => {
     <div className="fade-in">
       <div className="text-center mb-8">
         <h2 className="text-2xl font-bold mb-3">결과 확인</h2>
+        <p className="text-lg mb-1">
+          <span className="font-bold">{results.partnerName}</span>님의 답변을 맞춘 결과입니다
+        </p>
         <p className="text-gray-600">
           총 <span className="font-bold text-primary">{results.correctCount}</span>개의 
           짝궁 답변을 맞추었습니다!
