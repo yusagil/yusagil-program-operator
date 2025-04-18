@@ -7,7 +7,7 @@ import QuestionForm from "@/components/QuestionForm";
 import { submitAnswers } from "@/lib/api";
 
 const QuestionPage = () => {
-  const params = useParams<{ gameSessionId: string; userId: string }>();
+  const params = useParams<{ roomCode: string; gameSessionId: string; userId: string }>();
   const [location, navigate] = useLocation();
   const { toast } = useToast();
   
@@ -16,27 +16,30 @@ const QuestionPage = () => {
     Array(10).fill({ myAnswer: "", partnerGuess: "" })
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [userName, setUserName] = useState<string>("");
   const [partnerName, setPartnerName] = useState<string>("");
+  const [partnerSeatNumber, setPartnerSeatNumber] = useState<number>(0);
   
   // Extract params
+  const roomCode = params.roomCode || "";
   const gameSessionId = parseInt(params.gameSessionId);
   const userId = parseInt(params.userId);
   
-  // Get query params
-  const searchParams = new URLSearchParams(window.location.search);
-  const userName = searchParams.get("userName") || "";
-  const partnerNameParam = searchParams.get("partnerName") || "";
-  
-  // Set partner name
+  // Get query params from URL
   useEffect(() => {
-    if (partnerNameParam) {
-      setPartnerName(partnerNameParam);
-    }
-  }, [partnerNameParam]);
+    const searchParams = new URLSearchParams(window.location.search);
+    const userNameParam = searchParams.get("userName");
+    const partnerNameParam = searchParams.get("partnerName");
+    const partnerSeatParam = searchParams.get("partnerSeat");
+    
+    if (userNameParam) setUserName(userNameParam);
+    if (partnerNameParam) setPartnerName(partnerNameParam);
+    if (partnerSeatParam) setPartnerSeatNumber(parseInt(partnerSeatParam));
+  }, []);
   
   // Check for invalid params
   useEffect(() => {
-    if (isNaN(gameSessionId) || isNaN(userId)) {
+    if (!roomCode || isNaN(gameSessionId) || isNaN(userId)) {
       toast({
         title: "잘못된 접근",
         description: "올바른 경로로 접근해주세요.",
@@ -44,7 +47,7 @@ const QuestionPage = () => {
       });
       navigate("/");
     }
-  }, [gameSessionId, userId, toast, navigate]);
+  }, [roomCode, gameSessionId, userId, toast, navigate]);
   
   const handleAnswerChange = (myAnswer: string, partnerGuess: string) => {
     const updatedAnswers = [...answers];
@@ -96,17 +99,19 @@ const QuestionPage = () => {
     
     try {
       const result = await submitAnswers({
+        gameRoomId: parseInt(roomCode),
         gameSessionId,
         userId,
         answers,
       });
       
       if (result.success) {
-        // Navigate to waiting page with partner name
+        // Navigate to waiting page with partner details
         const queryParams = new URLSearchParams({
-          partnerName
+          partnerName,
+          partnerSeat: partnerSeatNumber.toString()
         }).toString();
-        navigate(`/game/${gameSessionId}/${userId}/waiting?${queryParams}`);
+        navigate(`/room/${roomCode}/game/${gameSessionId}/${userId}/waiting?${queryParams}`);
       } else {
         toast({
           title: "제출 오류",
@@ -115,6 +120,7 @@ const QuestionPage = () => {
         });
       }
     } catch (error) {
+      console.error("Error submitting answers:", error);
       toast({
         title: "제출 오류",
         description: "답변을 제출할 수 없습니다. 다시 시도해주세요.",
