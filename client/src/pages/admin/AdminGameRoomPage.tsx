@@ -1,18 +1,26 @@
-import { useState, useEffect } from "react";
-import { useParams, useLocation } from "wouter";
+import { useEffect, useState } from "react";
+import { useParams, useLocation, Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { getActiveGameRooms, getGameRoomUsers, getGameRoomResults } from "@/lib/api";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { 
+  ArrowLeft,
+  Users,
+  TrendingUp,
+  RefreshCw 
+} from "lucide-react";
+import { getGameRoomUsers, getGameRoomResults } from "@/lib/api";
 
+// User type
 type User = {
   id: number;
   name: string;
   seatNumber: number;
 };
 
+// Result type
 type Result = {
   userId: number;
   name: string;
@@ -26,273 +34,214 @@ type Result = {
 
 const AdminGameRoomPage = () => {
   const params = useParams<{ roomId: string }>();
-  const roomId = parseInt(params.roomId);
   const [location, navigate] = useLocation();
   const { toast } = useToast();
   
-  const [roomCode, setRoomCode] = useState<string>("");
+  const roomId = parseInt(params.roomId);
+  
   const [users, setUsers] = useState<User[]>([]);
   const [results, setResults] = useState<Result[]>([]);
-  const [isLoadingRoom, setIsLoadingRoom] = useState(true);
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
   const [isLoadingResults, setIsLoadingResults] = useState(true);
   
-  // Load room details, users, and results
-  useEffect(() => {
+  // Load game room users
+  const fetchUsers = async () => {
     if (isNaN(roomId)) {
       toast({
-        title: "오류",
-        description: "유효하지 않은 게임방 ID입니다",
-        variant: "destructive"
+        title: "잘못된 접근",
+        description: "올바른 게임방 ID를 입력해주세요.",
+        variant: "destructive",
       });
       navigate("/admin/dashboard");
       return;
     }
     
-    // Load room details
-    const loadRoomDetails = async () => {
-      try {
-        setIsLoadingRoom(true);
-        const response = await getActiveGameRooms();
-        
-        if (response.success) {
-          const room = response.gameRooms.find(r => r.id === roomId);
-          if (room) {
-            setRoomCode(room.code);
-          } else {
-            toast({
-              title: "오류",
-              description: "게임방을 찾을 수 없습니다",
-              variant: "destructive"
-            });
-            navigate("/admin/dashboard");
-          }
-        } else {
-          toast({
-            title: "오류",
-            description: response.error || "게임방 정보를 가져올 수 없습니다",
-            variant: "destructive"
-          });
-        }
-      } catch (error) {
-        console.error("Error loading room details:", error);
-        toast({
-          title: "오류",
-          description: "게임방 정보를 가져오는 중 오류가 발생했습니다",
-          variant: "destructive"
-        });
-      } finally {
-        setIsLoadingRoom(false);
-      }
-    };
+    setIsLoadingUsers(true);
     
-    // Load users in the room
-    const loadUsers = async () => {
-      try {
-        setIsLoadingUsers(true);
-        const response = await getGameRoomUsers(roomId);
-        
-        if (response.success) {
-          setUsers(response.users);
-        } else {
-          toast({
-            title: "오류",
-            description: response.error || "사용자 목록을 가져올 수 없습니다",
-            variant: "destructive"
-          });
-        }
-      } catch (error) {
-        console.error("Error loading users:", error);
+    try {
+      const response = await getGameRoomUsers(roomId);
+      
+      if (response.success) {
+        setUsers(response.users);
+      } else {
         toast({
-          title: "오류",
-          description: "사용자 목록을 가져오는 중 오류가 발생했습니다",
-          variant: "destructive"
+          title: "오류 발생",
+          description: response.error || "참가자 정보를 불러올 수 없습니다.",
+          variant: "destructive",
         });
-      } finally {
-        setIsLoadingUsers(false);
       }
-    };
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      toast({
+        title: "오류 발생",
+        description: "참가자 정보를 불러올 수 없습니다. 네트워크 연결을 확인해주세요.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoadingUsers(false);
+    }
+  };
+  
+  // Load game results
+  const fetchResults = async () => {
+    if (isNaN(roomId)) return;
     
-    // Load results in the room
-    const loadResults = async () => {
-      try {
-        setIsLoadingResults(true);
-        const response = await getGameRoomResults(roomId);
-        
-        if (response.success) {
-          setResults(response.results);
-        } else {
-          toast({
-            title: "오류",
-            description: response.error || "결과를 가져올 수 없습니다",
-            variant: "destructive"
-          });
-        }
-      } catch (error) {
-        console.error("Error loading results:", error);
+    setIsLoadingResults(true);
+    
+    try {
+      const response = await getGameRoomResults(roomId);
+      
+      if (response.success) {
+        setResults(response.results);
+      } else {
         toast({
-          title: "오류",
-          description: "결과를 가져오는 중 오류가 발생했습니다",
-          variant: "destructive"
+          title: "오류 발생",
+          description: response.error || "게임 결과를 불러올 수 없습니다.",
+          variant: "destructive",
         });
-      } finally {
-        setIsLoadingResults(false);
       }
-    };
-    
-    loadRoomDetails();
-    loadUsers();
-    loadResults();
+    } catch (error) {
+      console.error("Error fetching results:", error);
+      toast({
+        title: "오류 발생",
+        description: "게임 결과를 불러올 수 없습니다. 네트워크 연결을 확인해주세요.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoadingResults(false);
+    }
+  };
+  
+  // Load all data
+  useEffect(() => {
+    fetchUsers();
+    fetchResults();
   }, [roomId]);
   
-  const handleGoBack = () => {
-    navigate("/admin/dashboard");
-  };
-  
-  const refreshData = () => {
-    setIsLoadingUsers(true);
-    setIsLoadingResults(true);
-    Promise.all([
-      getGameRoomUsers(roomId),
-      getGameRoomResults(roomId)
-    ]).then(([usersResponse, resultsResponse]) => {
-      if (usersResponse.success) {
-        setUsers(usersResponse.users);
-      }
-      if (resultsResponse.success) {
-        setResults(resultsResponse.results);
-      }
-    }).catch(error => {
-      console.error("Error refreshing data:", error);
-      toast({
-        title: "오류",
-        description: "데이터를 새로고침하는 중 오류가 발생했습니다",
-        variant: "destructive"
-      });
-    }).finally(() => {
-      setIsLoadingUsers(false);
-      setIsLoadingResults(false);
-    });
-  };
-  
   return (
-    <div className="fade-in">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">게임방 관리</h1>
-        <Button variant="outline" size="sm" onClick={handleGoBack}>
-          뒤로
-        </Button>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div className="flex items-center space-x-2">
+          <Link href="/admin/dashboard">
+            <Button variant="ghost" size="icon">
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+          </Link>
+          <h1 className="text-2xl font-bold">게임방 관리</h1>
+        </div>
       </div>
       
-      {isLoadingRoom ? (
-        <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-primary border-solid mx-auto mb-2"></div>
-          <p className="text-gray-500">게임방 정보를 불러오는 중...</p>
-        </div>
-      ) : (
-        <>
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="text-xl">게임방 정보</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center">
-                <div className="text-3xl font-bold mb-2">{roomCode}</div>
-                <p className="text-gray-500">참가자들에게 이 코드를 알려주세요</p>
-              </div>
-            </CardContent>
-            <CardFooter className="justify-center">
-              <Button 
-                variant="ghost" 
-                onClick={refreshData}
-                className="text-sm"
-              >
-                데이터 새로고침
-              </Button>
-            </CardFooter>
-          </Card>
+      <Tabs defaultValue="participants">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="participants">
+            <Users className="h-4 w-4 mr-2" />
+            참가자 목록
+          </TabsTrigger>
+          <TabsTrigger value="results">
+            <TrendingUp className="h-4 w-4 mr-2" />
+            게임 결과
+          </TabsTrigger>
+        </TabsList>
+        
+        {/* Participants Tab */}
+        <TabsContent value="participants" className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-lg font-semibold">참가자 목록</h2>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={fetchUsers}
+              disabled={isLoadingUsers}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${isLoadingUsers ? 'animate-spin' : ''}`} />
+              새로고침
+            </Button>
+          </div>
           
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="text-xl">참가자 목록</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {isLoadingUsers ? (
-                <div className="text-center py-4">
-                  <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-primary border-solid mx-auto mb-2"></div>
-                  <p className="text-gray-500">참가자 목록을 불러오는 중...</p>
-                </div>
-              ) : users.length === 0 ? (
-                <div className="text-center py-4">
-                  <p className="text-gray-500">아직 참가자가 없습니다.</p>
-                </div>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>자리 번호</TableHead>
-                      <TableHead>이름</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {users.sort((a, b) => a.seatNumber - b.seatNumber).map((user) => (
-                      <TableRow key={user.id}>
-                        <TableCell>{user.seatNumber}</TableCell>
-                        <TableCell>{user.name}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )}
-            </CardContent>
-          </Card>
+          {users.length === 0 ? (
+            <Card>
+              <CardContent className="p-6 text-center text-gray-500">
+                {isLoadingUsers ? '참가자 정보를 불러오는 중...' : '아직 참가자가 없습니다.'}
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 gap-3">
+              {users.map((user) => (
+                <Card key={user.id}>
+                  <CardContent className="p-4 flex justify-between items-center">
+                    <div className="flex items-center space-x-4">
+                      <Badge variant="outline" className="h-8 w-8 flex items-center justify-center rounded-full">
+                        {user.seatNumber}
+                      </Badge>
+                      <div>
+                        <h3 className="font-medium">{user.name}</h3>
+                        <p className="text-sm text-gray-500">자리 번호: {user.seatNumber}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+        
+        {/* Results Tab */}
+        <TabsContent value="results" className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-lg font-semibold">게임 결과</h2>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={fetchResults}
+              disabled={isLoadingResults}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${isLoadingResults ? 'animate-spin' : ''}`} />
+              새로고침
+            </Button>
+          </div>
           
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-xl">게임 결과</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {isLoadingResults ? (
-                <div className="text-center py-4">
-                  <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-primary border-solid mx-auto mb-2"></div>
-                  <p className="text-gray-500">결과를 불러오는 중...</p>
-                </div>
-              ) : results.length === 0 ? (
-                <div className="text-center py-4">
-                  <p className="text-gray-500">아직 완료된 게임이 없습니다.</p>
-                </div>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>자리</TableHead>
-                      <TableHead>이름</TableHead>
-                      <TableHead>짝궁</TableHead>
-                      <TableHead className="text-right">점수</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {results.sort((a, b) => a.seatNumber - b.seatNumber).map((result) => (
-                      <TableRow key={result.userId}>
-                        <TableCell>{result.seatNumber}</TableCell>
-                        <TableCell>{result.name}</TableCell>
-                        <TableCell>
-                          {result.partnerName} ({result.partnerSeatNumber}번)
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <span className="font-medium">
+          {results.length === 0 ? (
+            <Card>
+              <CardContent className="p-6 text-center text-gray-500">
+                {isLoadingResults ? '결과를 불러오는 중...' : '아직 게임 결과가 없습니다.'}
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 gap-3">
+              {results.map((result) => (
+                <Card key={`${result.userId}-${result.partnerId}`}>
+                  <CardContent className="p-4">
+                    <div className="flex flex-col space-y-2">
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center space-x-2">
+                          <Badge variant="outline" className="flex-shrink-0">
+                            {result.seatNumber}번
+                          </Badge>
+                          <h3 className="font-medium">{result.name}</h3>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Badge className="bg-primary">
                             {result.correctCount}/{result.totalQuestions}
-                          </span>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )}
-            </CardContent>
-          </Card>
-        </>
-      )}
+                          </Badge>
+                        </div>
+                      </div>
+                      
+                      <div className="text-sm text-gray-500 flex justify-between">
+                        <div>
+                          <span className="font-medium">파트너:</span> {result.partnerName} ({result.partnerSeatNumber}번)
+                        </div>
+                        <div>
+                          <span className="font-medium">정답률:</span> {Math.round((result.correctCount / result.totalQuestions) * 100)}%
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

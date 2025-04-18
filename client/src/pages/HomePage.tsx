@@ -169,6 +169,12 @@ const HomePage = () => {
           게임 시작하기
           {!isLoading && <ArrowRight className="ml-1 h-5 w-5" />}
         </Button>
+        
+        <div className="mt-10 text-center text-gray-500 text-sm">
+          <a href="/admin" className="underline hover:text-primary transition-colors">
+            관리자 로그인
+          </a>
+        </div>
       </div>
     </div>
   );

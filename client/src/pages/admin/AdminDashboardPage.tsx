@@ -1,98 +1,114 @@
-import { useState, useEffect } from "react";
-import { useLocation } from "wouter";
+import { useEffect, useState } from "react";
+import { useLocation, Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { 
+  Clock, 
+  LogOut, 
+  Plus, 
+  Users,
+  Clipboard,
+  RefreshCw
+} from "lucide-react";
 import { adminLogout, createGameRoom, getActiveGameRooms } from "@/lib/api";
 
-// Date formatting helper
-function formatDate(date: Date) {
-  return new Date(date).toLocaleString('ko-KR', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-}
+type GameRoom = {
+  id: number;
+  code: string;
+  createdAt: Date;
+  expiresAt: Date;
+};
 
 const AdminDashboardPage = () => {
   const [location, navigate] = useLocation();
   const { toast } = useToast();
-  const [gameRooms, setGameRooms] = useState<Array<{
-    id: number;
-    code: string;
-    createdAt: Date;
-    expiresAt: Date;
-  }>>([]);
+  
+  const [gameRooms, setGameRooms] = useState<GameRoom[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [expiryHours, setExpiryHours] = useState(24);
   const [isCreating, setIsCreating] = useState(false);
   
-  // Fetch active game rooms
+  // Load active game rooms
   const fetchGameRooms = async () => {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
       const response = await getActiveGameRooms();
       
       if (response.success) {
-        setGameRooms(response.gameRooms);
+        setGameRooms(response.gameRooms.map(room => ({
+          ...room,
+          createdAt: new Date(room.createdAt),
+          expiresAt: new Date(room.expiresAt)
+        })));
       } else {
         toast({
-          title: "오류",
-          description: response.error || "게임방 목록을 가져올 수 없습니다",
-          variant: "destructive"
+          title: "오류 발생",
+          description: response.error || "게임방 정보를 불러올 수 없습니다.",
+          variant: "destructive",
         });
       }
     } catch (error) {
       console.error("Error fetching game rooms:", error);
       toast({
-        title: "오류",
-        description: "게임방 목록을 가져오는 중 오류가 발생했습니다",
-        variant: "destructive"
+        title: "오류 발생",
+        description: "게임방 정보를 불러올 수 없습니다. 네트워크 연결을 확인해주세요.",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
     }
   };
   
-  // Create a new game room
-  const handleCreateGameRoom = async () => {
-    try {
-      setIsCreating(true);
-      
-      const response = await createGameRoom({
-        expiryHours: 24 // Default to 24 hours
+  useEffect(() => {
+    fetchGameRooms();
+  }, []);
+  
+  const handleCreateRoom = async () => {
+    if (expiryHours < 1 || expiryHours > 72) {
+      toast({
+        title: "입력 오류",
+        description: "유효 기간은 1~72시간 사이로 입력해주세요.",
+        variant: "destructive",
       });
+      return;
+    }
+    
+    setIsCreating(true);
+    
+    try {
+      const response = await createGameRoom({ expiryHours });
       
       if (response.success) {
         toast({
-          title: "성공",
-          description: `게임방이 생성되었습니다. 코드: ${response.gameRoom.code}`
+          title: "게임방 생성 완료",
+          description: `게임방 코드: ${response.gameRoom.code}`,
         });
         
         // Refresh the game room list
         fetchGameRooms();
       } else {
         toast({
-          title: "오류",
-          description: response.error || "게임방을 생성할 수 없습니다",
-          variant: "destructive"
+          title: "게임방 생성 실패",
+          description: response.error || "게임방을 생성할 수 없습니다.",
+          variant: "destructive",
         });
       }
     } catch (error) {
       console.error("Error creating game room:", error);
       toast({
-        title: "오류",
-        description: "게임방 생성 중 오류가 발생했습니다",
-        variant: "destructive"
+        title: "오류 발생",
+        description: "게임방을 생성할 수 없습니다. 다시 시도해주세요.",
+        variant: "destructive",
       });
     } finally {
       setIsCreating(false);
     }
   };
   
-  // Handle logout
   const handleLogout = async () => {
     try {
       const response = await adminLogout();
@@ -100,109 +116,133 @@ const AdminDashboardPage = () => {
       if (response.success) {
         toast({
           title: "로그아웃 성공",
-          description: "로그아웃되었습니다."
+          description: "관리자 계정에서 로그아웃되었습니다.",
         });
-        
-        navigate("/");
+        navigate("/admin");
       } else {
         toast({
-          title: "오류",
-          description: response.error || "로그아웃할 수 없습니다",
-          variant: "destructive"
+          title: "로그아웃 실패",
+          description: response.error || "로그아웃 중 오류가 발생했습니다.",
+          variant: "destructive",
         });
       }
     } catch (error) {
-      console.error("Error logging out:", error);
+      console.error("Logout error:", error);
       toast({
-        title: "오류",
-        description: "로그아웃 처리 중 오류가 발생했습니다",
-        variant: "destructive"
+        title: "오류 발생",
+        description: "로그아웃 중 오류가 발생했습니다. 다시 시도해주세요.",
+        variant: "destructive",
       });
     }
   };
   
-  // View game room details
-  const handleViewGameRoom = (id: number) => {
-    navigate(`/admin/rooms/${id}`);
+  // Format date to locale string
+  const formatDate = (date: Date) => {
+    return date.toLocaleString('ko-KR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
   
-  // Load game rooms on mount
-  useEffect(() => {
-    fetchGameRooms();
-  }, []);
-  
   return (
-    <div className="fade-in">
-      <div className="flex justify-between items-center mb-6">
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">관리자 대시보드</h1>
         <Button variant="outline" size="sm" onClick={handleLogout}>
+          <LogOut className="h-4 w-4 mr-2" />
           로그아웃
         </Button>
       </div>
       
-      <Card className="mb-6">
+      <Card>
         <CardHeader>
-          <CardTitle className="text-xl">게임방 관리</CardTitle>
+          <CardTitle>새 게임방 생성</CardTitle>
+          <CardDescription>
+            새로운 게임방을 생성하고 코드를 참가자들에게 공유하세요.
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <Button 
-            className="w-full"
-            onClick={handleCreateGameRoom}
-            disabled={isCreating}
-          >
-            {isCreating ? "생성 중..." : "새 게임방 생성"}
-          </Button>
+          <div className="flex gap-4">
+            <div className="space-y-2 flex-1">
+              <Label htmlFor="expiryHours">유효 기간 (시간)</Label>
+              <Input
+                id="expiryHours"
+                type="number"
+                min="1"
+                max="72"
+                value={expiryHours}
+                onChange={(e) => setExpiryHours(parseInt(e.target.value) || 24)}
+                disabled={isCreating}
+              />
+            </div>
+            <div className="flex items-end">
+              <Button 
+                onClick={handleCreateRoom} 
+                disabled={isCreating || isLoading}
+                className="mb-0.5"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                생성하기
+              </Button>
+            </div>
+          </div>
         </CardContent>
       </Card>
       
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-xl">활성 게임방 목록</CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          {isLoading ? (
-            <div className="p-6 text-center">
-              <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-primary border-solid mx-auto mb-2"></div>
-              <p className="text-gray-500">게임방 목록을 불러오는 중...</p>
-            </div>
-          ) : gameRooms.length === 0 ? (
-            <div className="p-6 text-center">
-              <p className="text-gray-500">활성 게임방이 없습니다.</p>
-            </div>
-          ) : (
-            <div className="divide-y">
-              {gameRooms.map((room) => (
-                <div key={room.id} className="p-4">
-                  <div className="flex justify-between items-center mb-2">
-                    <div className="font-semibold">게임방 코드: {room.code}</div>
-                    <Button 
-                      size="sm" 
-                      variant="outline"
-                      onClick={() => handleViewGameRoom(room.id)}
-                    >
-                      상세보기
-                    </Button>
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    <div>생성: {formatDate(room.createdAt)}</div>
-                    <div>만료: {formatDate(room.expiresAt)}</div>
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-bold">활성 게임방 목록</h2>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={fetchGameRooms}
+          disabled={isLoading}
+        >
+          <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+          새로고침
+        </Button>
+      </div>
+      
+      {gameRooms.length === 0 ? (
+        <Card>
+          <CardContent className="p-6 text-center text-gray-500">
+            {isLoading ? '게임방 정보를 불러오는 중...' : '활성화된 게임방이 없습니다.'}
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 gap-4">
+          {gameRooms.map((room) => (
+            <Card key={room.id} className="overflow-hidden">
+              <CardContent className="p-0">
+                <div className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <div className="bg-primary text-primary-foreground p-2 rounded-md">
+                        <Clipboard className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold">{room.code}</h3>
+                        <div className="flex items-center text-sm text-gray-500">
+                          <Clock className="h-3.5 w-3.5 mr-1" />
+                          {formatDate(room.expiresAt)} 만료
+                        </div>
+                      </div>
+                    </div>
+                    <Link href={`/admin/rooms/${room.id}`}>
+                      <Button>
+                        <Users className="h-4 w-4 mr-2" />
+                        관리하기
+                      </Button>
+                    </Link>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-        <CardFooter className="flex justify-center">
-          <Button 
-            variant="ghost" 
-            onClick={fetchGameRooms} 
-            className="text-sm"
-            disabled={isLoading}
-          >
-            새로고침
-          </Button>
-        </CardFooter>
-      </Card>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

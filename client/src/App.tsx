@@ -7,30 +7,24 @@ import HomePage from "@/pages/HomePage";
 import QuestionPage from "@/pages/QuestionPage";
 import WaitingPage from "@/pages/WaitingPage";
 import ResultsPage from "@/pages/ResultsPage";
+import AdminLoginPage from "@/pages/admin/AdminLoginPage";
+import AdminDashboardPage from "@/pages/admin/AdminDashboardPage";
+import AdminGameRoomPage from "@/pages/admin/AdminGameRoomPage";
 
-// Temporary simple router until we implement all components
 function Router() {
   return (
     <Switch>
       <Route path="/" component={HomePage} />
       
-      {/* Original route structure (will be replaced) */}
+      {/* Original route structure (will eventually be replaced) */}
       <Route path="/game/:gameSessionId/:userId" component={QuestionPage} />
       <Route path="/game/:gameSessionId/:userId/waiting" component={WaitingPage} />
       <Route path="/game/:gameSessionId/:userId/results" component={ResultsPage} />
       
-      {/* New route structure (will be implemented) */}
-      {/* 
-      <Route path="/join" component={JoinRoomPage} />
-      <Route path="/room/:roomCode/setup" component={GameSetupPage} />
-      <Route path="/room/:roomCode/game/:gameSessionId/:userId" component={QuestionPage} />
-      <Route path="/room/:roomCode/game/:gameSessionId/:userId/waiting" component={WaitingPage} />
-      <Route path="/room/:roomCode/game/:gameSessionId/:userId/results" component={ResultsPage} />
-      
+      {/* Admin routes */}
       <Route path="/admin" component={AdminLoginPage} />
       <Route path="/admin/dashboard" component={AdminDashboardPage} />
       <Route path="/admin/rooms/:roomId" component={AdminGameRoomPage} />
-      */}
       
       {/* Fallback route */}
       <Route component={NotFound} />
