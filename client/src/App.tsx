@@ -12,12 +12,14 @@ import ResultsPage from "@/pages/ResultsPage";
 import AdminLoginPage from "@/pages/admin/AdminLoginPage";
 import AdminDashboardPage from "@/pages/admin/AdminDashboardPage";
 import AdminGameRoomPage from "@/pages/admin/AdminGameRoomPage";
+import SplashPage from "@/pages/SplashPage";
 
 function Router() {
   return (
     <Switch>
       {/* Main routes */}
-      <Route path="/" component={WelcomePage} />
+      <Route path="/" component={SplashPage} />
+      <Route path="/home" component={WelcomePage} />
       <Route path="/join" component={JoinRoomPage} />
       <Route path="/room/:roomCode/setup" component={GameSetupPage} />
       
