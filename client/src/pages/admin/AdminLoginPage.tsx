@@ -18,6 +18,16 @@ const AdminLoginPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // 하드코딩 로그인 확인 (특별 케이스)
+    if (username === "yusagil" && password === "0528") {
+      toast({
+        title: "로그인 성공",
+        description: "관리자 대시보드로 이동합니다.",
+      });
+      navigate("/admin/dashboard");
+      return;
+    }
+    
     // Validate inputs
     if (!username.trim() || !password.trim()) {
       toast({

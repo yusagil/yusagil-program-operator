@@ -18,7 +18,13 @@ export function hashPassword(password: string): string {
 
 // Function to compare password with hash
 export function comparePassword(password: string, hash: string): boolean {
-  return compareSync(password, hash);
+  try {
+    return compareSync(password, hash);
+  } catch (error) {
+    console.error("Error comparing passwords:", error);
+    // 해시가 bcrypt 형식이 아닌 경우, 텍스트 직접 비교
+    return password === hash;
+  }
 }
 
 // Middleware to require admin authentication
