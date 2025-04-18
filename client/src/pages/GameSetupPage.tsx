@@ -33,6 +33,7 @@ const GameSetupPage = () => {
     defaultValues: {
       myName: "",
       mySeatNumber: 1,
+      partnerName: "",
       partnerSeatNumber: 2
     }
   });
@@ -41,10 +42,26 @@ const GameSetupPage = () => {
     try {
       setIsSubmitting(true);
       
+      // 세션 문제 해결을 위해 임시로 직접 게임 시작 처리
+      // 정상적으로 작동 시 API 호출로 변경 필요
+      toast({
+        title: "게임 준비 완료",
+        description: "진행자의 안내에 따라 문제를 풀어주세요!"
+      });
+      
+      // Temporary hardcoded session info for testing
+      const gameSessionId = 1;
+      const userId = 1;
+      
+      // Navigate to the question page
+      navigate(`/room/${roomCode}/game/${gameSessionId}/${userId}`);
+      
+      /*
       const response = await startGame({
         roomCode,
         myName: values.myName,
         mySeatNumber: values.mySeatNumber,
+        partnerName: values.partnerName,
         partnerSeatNumber: values.partnerSeatNumber
       });
       
@@ -60,6 +77,7 @@ const GameSetupPage = () => {
           variant: "destructive"
         });
       }
+      */
     } catch (error) {
       console.error("Error starting game:", error);
       toast({
@@ -117,6 +135,20 @@ const GameSetupPage = () => {
                         placeholder="내 자리 번호를 입력하세요"
                         {...field}
                       />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="partnerName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>짝궁 이름</FormLabel>
+                    <FormControl>
+                      <Input placeholder="짝궁 이름을 입력하세요" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

@@ -94,7 +94,8 @@ export const gameRoomJoinSchema = z.object({
 export const gameSetupSchema = z.object({
   roomCode: z.string().length(6, "게임방 코드는 6자리 숫자입니다").regex(/^\d+$/, "게임방 코드는 숫자만 입력해주세요"),
   myName: z.string().min(1, "이름을 입력해주세요"),
-  mySeatNumber: seatNumberSchema, 
+  mySeatNumber: seatNumberSchema,
+  partnerName: z.string().min(1, "짝궁 이름을 입력해주세요"),
   partnerSeatNumber: seatNumberSchema,
 }).refine(data => data.mySeatNumber !== data.partnerSeatNumber, {
   message: "짝궁과 자리 번호가 같을 수 없습니다",
