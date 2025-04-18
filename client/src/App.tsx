@@ -12,14 +12,12 @@ import ResultsPage from "@/pages/ResultsPage";
 import AdminLoginPage from "@/pages/admin/AdminLoginPage";
 import AdminDashboardPage from "@/pages/admin/AdminDashboardPage";
 import AdminGameRoomPage from "@/pages/admin/AdminGameRoomPage";
-import SplashPage from "@/pages/SplashPage";
 
 function Router() {
   return (
     <Switch>
       {/* Main routes */}
-      <Route path="/" component={SplashPage} />
-      <Route path="/home" component={WelcomePage} />
+      <Route path="/" component={WelcomePage} />
       <Route path="/join" component={JoinRoomPage} />
       <Route path="/room/:roomCode/setup" component={GameSetupPage} />
       
@@ -47,7 +45,7 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="max-w-md mx-auto px-4 py-8 min-h-screen splash-background">
+      <div className="max-w-md mx-auto px-4 py-8 bg-gray-50 min-h-screen">
         <Router />
         <Toaster />
       </div>
