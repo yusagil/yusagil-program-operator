@@ -10,20 +10,7 @@ import {
 } from "@shared/schema";
 import { ZodError } from "zod";
 import { fromZodError } from "zod-validation-error";
-
-// Authentication middleware for admin routes
-function requireAdmin(req: Request, res: Response, next: NextFunction) {
-  const isAdmin = req.session && req.session.isAdmin === true;
-  
-  if (!isAdmin) {
-    return res.status(401).json({
-      success: false,
-      error: "관리자 권한이 필요합니다"
-    });
-  }
-  
-  next();
-}
+import { requireAdmin, comparePassword } from "./auth";
 
 // Schedule cleanup of expired game rooms (runs every hour)
 function setupCleanupSchedule() {
