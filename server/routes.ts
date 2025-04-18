@@ -45,6 +45,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Set session as admin
       if (req.session) {
         req.session.isAdmin = true;
+        req.session.adminUsername = username;
       }
       
       res.json({
