@@ -14,6 +14,7 @@ import { startGame } from "@/lib/api";
 const formSchema = z.object({
   myName: z.string().min(1, "이름을 입력해주세요"),
   mySeatNumber: z.coerce.number().int().min(1).max(12),
+  partnerName: z.string().min(1, "짝궁 이름을 입력해주세요"),
   partnerSeatNumber: z.coerce.number().int().min(1).max(12)
 }).refine(data => data.mySeatNumber !== data.partnerSeatNumber, {
   message: "짝궁과 자리 번호가 같을 수 없습니다",

@@ -12,9 +12,7 @@ import { validateGameRoomCode, joinGameRoom } from "@/lib/api";
 
 // Form schema for joining a game room
 const formSchema = z.object({
-  roomCode: z.string().length(6, "게임방 코드는 6자리 숫자입니다").regex(/^\d+$/, "게임방 코드는 숫자만 입력해주세요"),
-  name: z.string().min(1, "이름을 입력해주세요"),
-  seatNumber: z.coerce.number().int().min(1).max(12)
+  roomCode: z.string().length(6, "게임방 코드는 6자리 숫자입니다").regex(/^\d+$/, "게임방 코드는 숫자만 입력해주세요")
 });
 
 const JoinRoomPage = () => {
@@ -25,9 +23,7 @@ const JoinRoomPage = () => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      roomCode: "",
-      name: "",
-      seatNumber: 1
+      roomCode: ""
     }
   });
   
@@ -47,33 +43,19 @@ const JoinRoomPage = () => {
         return;
       }
       
-      // Then join the room
-      const joinResponse = await joinGameRoom({
-        roomCode: values.roomCode,
-        name: values.name,
-        seatNumber: values.seatNumber
+      // Success - navigate to setup page
+      toast({
+        title: "게임방 확인 완료",
+        description: "게임 설정을 계속 진행해주세요",
       });
       
-      if (joinResponse.success) {
-        toast({
-          title: "성공",
-          description: "게임방에 참여했습니다!"
-        });
-        
-        // Navigate to the game setup page
-        navigate(`/room/${values.roomCode}/setup`);
-      } else {
-        toast({
-          title: "오류",
-          description: joinResponse.error || "게임방에 참여할 수 없습니다",
-          variant: "destructive"
-        });
-      }
+      // Navigate to the game setup page
+      navigate(`/room/${values.roomCode}/setup`);
     } catch (error) {
-      console.error("Error joining game room:", error);
+      console.error("Error validating game room:", error);
       toast({
         title: "오류",
-        description: "게임방 참여 중 오류가 발생했습니다",
+        description: "게임방 코드 확인 중 오류가 발생했습니다",
         variant: "destructive"
       });
     } finally {
@@ -112,41 +94,7 @@ const JoinRoomPage = () => {
                   </FormItem>
                 )}
               />
-              
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>이름</FormLabel>
-                    <FormControl>
-                      <Input placeholder="내 이름을 입력하세요" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="seatNumber"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>자리 번호 (1-12)</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        min={1}
-                        max={12}
-                        placeholder="자리 번호를 입력하세요"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
+
               <div className="flex gap-3">
                 <Button
                   type="button"
