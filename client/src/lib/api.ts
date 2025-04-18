@@ -107,7 +107,6 @@ export async function startGame(gameSetup: GameSetup): Promise<ApiResponse<{
 
 // Submit answers for a game
 export async function submitAnswers(data: {
-  gameRoomId: number;
   gameSessionId: number;
   userId: number;
   answers: Array<{ myAnswer: string; partnerGuess: string }>;

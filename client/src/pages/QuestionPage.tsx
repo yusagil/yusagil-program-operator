@@ -7,7 +7,7 @@ import QuestionForm from "@/components/QuestionForm";
 import { submitAnswers } from "@/lib/api";
 
 const QuestionPage = () => {
-  const params = useParams<{ roomCode: string; gameSessionId: string; userId: string }>();
+  const params = useParams<{ gameSessionId: string; userId: string }>();
   const [location, navigate] = useLocation();
   const { toast } = useToast();
   
@@ -18,10 +18,8 @@ const QuestionPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [userName, setUserName] = useState<string>("");
   const [partnerName, setPartnerName] = useState<string>("");
-  const [partnerSeatNumber, setPartnerSeatNumber] = useState<number>(0);
   
   // Extract params
-  const roomCode = params.roomCode || "";
   const gameSessionId = parseInt(params.gameSessionId);
   const userId = parseInt(params.userId);
   
@@ -30,16 +28,14 @@ const QuestionPage = () => {
     const searchParams = new URLSearchParams(window.location.search);
     const userNameParam = searchParams.get("userName");
     const partnerNameParam = searchParams.get("partnerName");
-    const partnerSeatParam = searchParams.get("partnerSeat");
     
     if (userNameParam) setUserName(userNameParam);
     if (partnerNameParam) setPartnerName(partnerNameParam);
-    if (partnerSeatParam) setPartnerSeatNumber(parseInt(partnerSeatParam));
   }, []);
   
   // Check for invalid params
   useEffect(() => {
-    if (!roomCode || isNaN(gameSessionId) || isNaN(userId)) {
+    if (isNaN(gameSessionId) || isNaN(userId)) {
       toast({
         title: "잘못된 접근",
         description: "올바른 경로로 접근해주세요.",
@@ -47,7 +43,7 @@ const QuestionPage = () => {
       });
       navigate("/");
     }
-  }, [roomCode, gameSessionId, userId, toast, navigate]);
+  }, [gameSessionId, userId, toast, navigate]);
   
   const handleAnswerChange = (myAnswer: string, partnerGuess: string) => {
     const updatedAnswers = [...answers];
@@ -99,19 +95,17 @@ const QuestionPage = () => {
     
     try {
       const result = await submitAnswers({
-        gameRoomId: parseInt(roomCode),
         gameSessionId,
         userId,
         answers,
       });
       
       if (result.success) {
-        // Navigate to waiting page with partner details
+        // Navigate to waiting page with partner name
         const queryParams = new URLSearchParams({
-          partnerName,
-          partnerSeat: partnerSeatNumber.toString()
+          partnerName
         }).toString();
-        navigate(`/room/${roomCode}/game/${gameSessionId}/${userId}/waiting?${queryParams}`);
+        navigate(`/game/${gameSessionId}/${userId}/waiting?${queryParams}`);
       } else {
         toast({
           title: "제출 오류",

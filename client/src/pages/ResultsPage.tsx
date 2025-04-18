@@ -7,7 +7,7 @@ import { getGameResults } from "@/lib/api";
 import ResultCard from "@/components/ResultCard";
 
 const ResultsPage = () => {
-  const params = useParams<{ gameSessionId: string; userId: string }>();
+  const params = useParams<{ roomCode: string; gameSessionId: string; userId: string }>();
   const [location, navigate] = useLocation();
   const { toast } = useToast();
   
@@ -15,13 +15,14 @@ const ResultsPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   
   // Extract params
+  const roomCode = params.roomCode || "";
   const gameSessionId = parseInt(params.gameSessionId);
   const userId = parseInt(params.userId);
   
   // Fetch results
   useEffect(() => {
     const fetchResults = async () => {
-      if (isNaN(gameSessionId) || isNaN(userId)) {
+      if (!roomCode || isNaN(gameSessionId) || isNaN(userId)) {
         toast({
           title: "잘못된 접근",
           description: "올바른 경로로 접근해주세요.",
@@ -39,7 +40,7 @@ const ResultsPage = () => {
         } else {
           if (response.status === "waiting") {
             // Still waiting for partner to complete
-            navigate(`/game/${gameSessionId}/${userId}/waiting`);
+            navigate(`/room/${roomCode}/game/${gameSessionId}/${userId}/waiting`);
           } else {
             // Error occurred
             toast({
@@ -64,7 +65,7 @@ const ResultsPage = () => {
     };
     
     fetchResults();
-  }, [gameSessionId, userId, toast, navigate]);
+  }, [roomCode, gameSessionId, userId, toast, navigate]);
   
   const handleRestart = () => {
     navigate("/");

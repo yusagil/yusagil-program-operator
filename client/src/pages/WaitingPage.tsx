@@ -5,16 +5,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { getGameResults } from "@/lib/api";
 
 const WaitingPage = () => {
-  const params = useParams<{ roomCode: string; gameSessionId: string; userId: string }>();
+  const params = useParams<{ gameSessionId: string; userId: string }>();
   const [location, navigate] = useLocation();
   const { toast } = useToast();
   
   const [isPolling, setIsPolling] = useState(true);
   const [partnerName, setPartnerName] = useState<string>("");
-  const [partnerSeatNumber, setPartnerSeatNumber] = useState<number>(0);
   
   // Extract params
-  const roomCode = params.roomCode || "";
   const gameSessionId = parseInt(params.gameSessionId);
   const userId = parseInt(params.userId);
   
@@ -22,15 +20,13 @@ const WaitingPage = () => {
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
     const partnerNameParam = searchParams.get("partnerName");
-    const partnerSeatParam = searchParams.get("partnerSeat");
     
     if (partnerNameParam) setPartnerName(partnerNameParam);
-    if (partnerSeatParam) setPartnerSeatNumber(parseInt(partnerSeatParam));
   }, []);
   
   // Check for invalid params
   useEffect(() => {
-    if (!roomCode || isNaN(gameSessionId) || isNaN(userId)) {
+    if (isNaN(gameSessionId) || isNaN(userId)) {
       toast({
         title: "잘못된 접근",
         description: "올바른 경로로 접근해주세요.",
@@ -52,7 +48,7 @@ const WaitingPage = () => {
             if (response.status === "complete") {
               // Results are ready, navigate to results page
               setIsPolling(false);
-              navigate(`/room/${roomCode}/game/${gameSessionId}/${userId}/results`);
+              navigate(`/game/${gameSessionId}/${userId}/results`);
             }
             // If status is "waiting", keep polling
           } else {
@@ -87,7 +83,7 @@ const WaitingPage = () => {
         clearInterval(intervalId);
       }
     };
-  }, [roomCode, gameSessionId, userId, isPolling, toast, navigate]);
+  }, [gameSessionId, userId, isPolling, toast, navigate]);
   
   return (
     <div className="fade-in text-center">
