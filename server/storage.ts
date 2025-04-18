@@ -1,60 +1,193 @@
 import { 
   InsertUser, User, InsertGameSession, GameSession, 
-  InsertAnswer, Answer, GameResult, AnswerPair 
+  InsertAnswer, Answer, GameResult, AnswerPair,
+  InsertGameRoom, GameRoom, InsertAdmin, Admin, UserScoreSummary
 } from "@shared/schema";
+import crypto from "crypto";
+
+// Helper functions
+function generateRandomCode(length: number = 6): string {
+  const characters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Removed similar looking characters
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * characters.length));
+  }
+  return result;
+}
+
+function hashPassword(password: string): string {
+  return crypto.createHash('sha256').update(password).digest('hex');
+}
 
 export interface IStorage {
+  // Game room operations
+  createGameRoom(expiryHours: number): Promise<GameRoom>;
+  getGameRoomByCode(code: string): Promise<GameRoom | undefined>;
+  getActiveGameRooms(): Promise<GameRoom[]>;
+  deactivateGameRoom(id: number): Promise<GameRoom>;
+  cleanupExpiredGameRooms(): Promise<void>;
+  
   // User operations
   createUser(user: InsertUser): Promise<User>;
-  getUserBySeatNumber(seatNumber: number): Promise<User | undefined>;
+  getUserById(id: number): Promise<User | undefined>;
+  getUsersByGameRoom(gameRoomId: number): Promise<User[]>;
+  getUserByGameRoomAndSeatNumber(gameRoomId: number, seatNumber: number): Promise<User | undefined>;
   updateUserName(userId: number, name: string): Promise<User>;
   
   // Game session operations
   createGameSession(session: InsertGameSession): Promise<GameSession>;
   getGameSession(id: number): Promise<GameSession | undefined>;
-  getGameSessionByUsers(user1Id: number, user2Id: number): Promise<GameSession | undefined>;
+  getGameSessionsByGameRoom(gameRoomId: number): Promise<GameSession[]>;
+  getGameSessionByUsers(gameRoomId: number, user1Id: number, user2Id: number): Promise<GameSession | undefined>;
   markGameSessionComplete(id: number): Promise<GameSession>;
   
   // Answer operations
   saveAnswer(answer: InsertAnswer): Promise<Answer>;
   getAnswersByGameSession(gameSessionId: number): Promise<Answer[]>;
   getAnswersByGameSessionAndUser(gameSessionId: number, userId: number): Promise<Answer[]>;
+  getAllAnswersByGameRoom(gameRoomId: number): Promise<Answer[]>;
   
   // Game results
   getGameResults(gameSessionId: number, userId: number): Promise<GameResult | undefined>;
+  getAllGameResultsByGameRoom(gameRoomId: number): Promise<UserScoreSummary[]>;
+  
+  // Admin operations
+  createAdmin(admin: InsertAdmin): Promise<Admin>;
+  getAdminByUsername(username: string): Promise<Admin | undefined>;
+  validateAdminCredentials(username: string, password: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
+  private gameRooms: Map<number, GameRoom>;
   private users: Map<number, User>;
   private gameSessions: Map<number, GameSession>;
   private answers: Map<number, Answer>;
+  private admins: Map<number, Admin>;
   
+  private gameRoomIdCounter: number;
   private userIdCounter: number;
   private gameSessionIdCounter: number;
   private answerIdCounter: number;
+  private adminIdCounter: number;
 
   constructor() {
+    this.gameRooms = new Map();
     this.users = new Map();
     this.gameSessions = new Map();
     this.answers = new Map();
+    this.admins = new Map();
     
+    this.gameRoomIdCounter = 1;
     this.userIdCounter = 1;
     this.gameSessionIdCounter = 1;
     this.answerIdCounter = 1;
+    this.adminIdCounter = 1;
+    
+    // Create a default admin account
+    this.createAdmin({
+      username: "admin",
+      password: "admin123"  // This would be hashed in the createAdmin method
+    });
+  }
+  
+  // Game room operations
+  async createGameRoom(expiryHours: number = 24): Promise<GameRoom> {
+    // Generate a unique code
+    let code: string;
+    let isUnique = false;
+    
+    while (!isUnique) {
+      code = generateRandomCode();
+      isUnique = !Array.from(this.gameRooms.values()).some(room => room.code === code);
+    }
+    
+    // Calculate expiry date (24 hours from now by default)
+    const now = new Date();
+    const expiresAt = new Date(now);
+    expiresAt.setHours(expiresAt.getHours() + expiryHours);
+    
+    const newGameRoom: GameRoom = {
+      id: this.gameRoomIdCounter++,
+      code: code!,
+      isActive: true,
+      createdAt: now,
+      expiresAt: expiresAt
+    };
+    
+    this.gameRooms.set(newGameRoom.id, newGameRoom);
+    return newGameRoom;
+  }
+  
+  async getGameRoomByCode(code: string): Promise<GameRoom | undefined> {
+    return Array.from(this.gameRooms.values()).find(
+      room => room.code === code && room.isActive
+    );
+  }
+  
+  async getActiveGameRooms(): Promise<GameRoom[]> {
+    const now = new Date();
+    return Array.from(this.gameRooms.values())
+      .filter(room => room.isActive && room.expiresAt > now)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+  
+  async deactivateGameRoom(id: number): Promise<GameRoom> {
+    const room = this.gameRooms.get(id);
+    if (!room) {
+      throw new Error(`Game room not found with id ${id}`);
+    }
+    
+    const updatedRoom = { ...room, isActive: false };
+    this.gameRooms.set(id, updatedRoom);
+    return updatedRoom;
+  }
+  
+  async cleanupExpiredGameRooms(): Promise<void> {
+    const now = new Date();
+    for (const [id, room] of this.gameRooms.entries()) {
+      if (room.expiresAt <= now && room.isActive) {
+        await this.deactivateGameRoom(id);
+      }
+    }
   }
 
   // User operations
   async createUser(user: InsertUser): Promise<User> {
+    // Check if user with this seat number already exists in the game room
+    const existingUser = await this.getUserByGameRoomAndSeatNumber(
+      user.gameRoomId, 
+      user.seatNumber
+    );
+    
+    if (existingUser) {
+      throw new Error(`User with seat number ${user.seatNumber} already exists in this game room`);
+    }
+    
+    const now = new Date();
     const newUser: User = {
       id: this.userIdCounter++,
-      ...user
+      ...user,
+      createdAt: now
     };
+    
     this.users.set(newUser.id, newUser);
     return newUser;
   }
-
-  async getUserBySeatNumber(seatNumber: number): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(user => user.seatNumber === seatNumber);
+  
+  async getUserById(id: number): Promise<User | undefined> {
+    return this.users.get(id);
+  }
+  
+  async getUsersByGameRoom(gameRoomId: number): Promise<User[]> {
+    return Array.from(this.users.values())
+      .filter(user => user.gameRoomId === gameRoomId)
+      .sort((a, b) => a.seatNumber - b.seatNumber);
+  }
+  
+  async getUserByGameRoomAndSeatNumber(gameRoomId: number, seatNumber: number): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(
+      user => user.gameRoomId === gameRoomId && user.seatNumber === seatNumber
+    );
   }
 
   async updateUserName(userId: number, name: string): Promise<User> {
@@ -70,11 +203,38 @@ export class MemStorage implements IStorage {
   
   // Game session operations
   async createGameSession(session: InsertGameSession): Promise<GameSession> {
+    // Check if both users exist
+    const user1 = await this.getUserById(session.user1Id);
+    const user2 = await this.getUserById(session.user2Id);
+    
+    if (!user1 || !user2) {
+      throw new Error('One or both users not found');
+    }
+    
+    // Check if both users belong to the specified game room
+    if (user1.gameRoomId !== session.gameRoomId || user2.gameRoomId !== session.gameRoomId) {
+      throw new Error('Users must belong to the specified game room');
+    }
+    
+    // Check if a session already exists for these users in this game room
+    const existingSession = await this.getGameSessionByUsers(
+      session.gameRoomId,
+      session.user1Id,
+      session.user2Id
+    );
+    
+    if (existingSession) {
+      return existingSession;
+    }
+    
+    const now = new Date();
     const newSession: GameSession = {
       id: this.gameSessionIdCounter++,
       ...session,
       isComplete: false,
+      createdAt: now
     };
+    
     this.gameSessions.set(newSession.id, newSession);
     return newSession;
   }
@@ -82,16 +242,22 @@ export class MemStorage implements IStorage {
   async getGameSession(id: number): Promise<GameSession | undefined> {
     return this.gameSessions.get(id);
   }
+  
+  async getGameSessionsByGameRoom(gameRoomId: number): Promise<GameSession[]> {
+    return Array.from(this.gameSessions.values())
+      .filter(session => session.gameRoomId === gameRoomId)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
 
-  async getGameSessionByUsers(user1Id: number, user2Id: number): Promise<GameSession | undefined> {
-    // Find the most recent active game session between these users
+  async getGameSessionByUsers(gameRoomId: number, user1Id: number, user2Id: number): Promise<GameSession | undefined> {
+    // Find the game session in the specified game room
     const sessions = Array.from(this.gameSessions.values())
       .filter(session => 
-        // Match regardless of which user is user1 or user2
-        (session.user1Id === user1Id && session.user2Id === user2Id) || 
-        (session.user1Id === user2Id && session.user2Id === user1Id)
+        session.gameRoomId === gameRoomId &&
+        ((session.user1Id === user1Id && session.user2Id === user2Id) || 
+         (session.user1Id === user2Id && session.user2Id === user1Id))
       )
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
     
     return sessions.length > 0 ? sessions[0] : undefined;
   }
@@ -109,10 +275,48 @@ export class MemStorage implements IStorage {
   
   // Answer operations
   async saveAnswer(answer: InsertAnswer): Promise<Answer> {
+    // Verify the game session exists
+    const session = await this.getGameSession(answer.gameSessionId);
+    if (!session) {
+      throw new Error(`Game session not found with id ${answer.gameSessionId}`);
+    }
+    
+    // Verify the user exists and belongs to the game session
+    const user = await this.getUserById(answer.userId);
+    if (!user) {
+      throw new Error(`User not found with id ${answer.userId}`);
+    }
+    
+    if (session.user1Id !== answer.userId && session.user2Id !== answer.userId) {
+      throw new Error(`User ${answer.userId} is not part of game session ${answer.gameSessionId}`);
+    }
+    
+    // Check if this answer already exists
+    const existingAnswer = Array.from(this.answers.values()).find(a => 
+      a.gameSessionId === answer.gameSessionId && 
+      a.userId === answer.userId && 
+      a.questionNumber === answer.questionNumber
+    );
+    
+    if (existingAnswer) {
+      // Update the existing answer
+      const updatedAnswer = { 
+        ...existingAnswer, 
+        myAnswer: answer.myAnswer, 
+        partnerGuess: answer.partnerGuess 
+      };
+      this.answers.set(existingAnswer.id, updatedAnswer);
+      return updatedAnswer;
+    }
+    
+    // Create a new answer
+    const now = new Date();
     const newAnswer: Answer = {
       id: this.answerIdCounter++,
-      ...answer
+      ...answer,
+      createdAt: now
     };
+    
     this.answers.set(newAnswer.id, newAnswer);
     return newAnswer;
   }
@@ -129,6 +333,25 @@ export class MemStorage implements IStorage {
       .sort((a, b) => a.questionNumber - b.questionNumber);
   }
   
+  async getAllAnswersByGameRoom(gameRoomId: number): Promise<Answer[]> {
+    // Get all game sessions in this game room
+    const sessions = await this.getGameSessionsByGameRoom(gameRoomId);
+    const sessionIds = sessions.map(session => session.id);
+    
+    // Get all answers for these sessions
+    return Array.from(this.answers.values())
+      .filter(answer => sessionIds.includes(answer.gameSessionId))
+      .sort((a, b) => {
+        if (a.gameSessionId !== b.gameSessionId) {
+          return a.gameSessionId - b.gameSessionId;
+        }
+        if (a.userId !== b.userId) {
+          return a.userId - b.userId;
+        }
+        return a.questionNumber - b.questionNumber;
+      });
+  }
+  
   // Game results
   async getGameResults(gameSessionId: number, userId: number): Promise<GameResult | undefined> {
     const gameSession = await this.getGameSession(gameSessionId);
@@ -139,9 +362,8 @@ export class MemStorage implements IStorage {
     const partnerId = gameSession.user1Id === userId ? gameSession.user2Id : gameSession.user1Id;
     
     // Get both users to get their seat numbers
-    const users = Array.from(this.users.values());
-    const user = users.find(u => u.id === userId);
-    const partner = users.find(u => u.id === partnerId);
+    const user = await this.getUserById(userId);
+    const partner = await this.getUserById(partnerId);
     
     if (!user || !partner) {
       return undefined;
@@ -180,7 +402,13 @@ export class MemStorage implements IStorage {
       }
     }
     
+    // Mark the game session as complete if not already done
+    if (!gameSession.isComplete) {
+      await this.markGameSessionComplete(gameSessionId);
+    }
+    
     return {
+      gameRoomId: gameSession.gameRoomId,
       gameSessionId,
       userId,
       partnerId,
@@ -191,6 +419,83 @@ export class MemStorage implements IStorage {
       answerPairs,
       correctCount
     };
+  }
+  
+  async getAllGameResultsByGameRoom(gameRoomId: number): Promise<UserScoreSummary[]> {
+    const sessions = await this.getGameSessionsByGameRoom(gameRoomId);
+    const completeSessions = sessions.filter(session => session.isComplete);
+    
+    const results: UserScoreSummary[] = [];
+    
+    for (const session of completeSessions) {
+      // Get results for user1
+      const user1Result = await this.getGameResults(session.id, session.user1Id);
+      // Get results for user2
+      const user2Result = await this.getGameResults(session.id, session.user2Id);
+      
+      if (user1Result) {
+        results.push({
+          userId: user1Result.userId,
+          name: user1Result.userName,
+          seatNumber: user1Result.userSeatNumber,
+          partnerId: user1Result.partnerId,
+          partnerName: user1Result.partnerName,
+          partnerSeatNumber: user1Result.partnerSeatNumber,
+          correctCount: user1Result.correctCount,
+          totalQuestions: user1Result.answerPairs.length
+        });
+      }
+      
+      if (user2Result) {
+        results.push({
+          userId: user2Result.userId,
+          name: user2Result.userName,
+          seatNumber: user2Result.userSeatNumber,
+          partnerId: user2Result.partnerId,
+          partnerName: user2Result.partnerName,
+          partnerSeatNumber: user2Result.partnerSeatNumber,
+          correctCount: user2Result.correctCount,
+          totalQuestions: user2Result.answerPairs.length
+        });
+      }
+    }
+    
+    // Sort by seat number
+    return results.sort((a, b) => a.seatNumber - b.seatNumber);
+  }
+  
+  // Admin operations
+  async createAdmin(admin: InsertAdmin): Promise<Admin> {
+    // Check if username already exists
+    const existingAdmin = await this.getAdminByUsername(admin.username);
+    if (existingAdmin) {
+      throw new Error(`Admin with username ${admin.username} already exists`);
+    }
+    
+    const now = new Date();
+    const newAdmin: Admin = {
+      id: this.adminIdCounter++,
+      username: admin.username,
+      passwordHash: hashPassword(admin.password),
+      createdAt: now
+    };
+    
+    this.admins.set(newAdmin.id, newAdmin);
+    return newAdmin;
+  }
+  
+  async getAdminByUsername(username: string): Promise<Admin | undefined> {
+    return Array.from(this.admins.values()).find(admin => admin.username === username);
+  }
+  
+  async validateAdminCredentials(username: string, password: string): Promise<boolean> {
+    const admin = await this.getAdminByUsername(username);
+    if (!admin) {
+      return false;
+    }
+    
+    const hashedPassword = hashPassword(password);
+    return admin.passwordHash === hashedPassword;
   }
 }
 
