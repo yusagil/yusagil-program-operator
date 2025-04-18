@@ -472,7 +472,7 @@ export class MemStorage implements IStorage {
     const newAdmin: Admin = {
       id: this.adminIdCounter++,
       username: admin.username,
-      passwordHash: hashPassword(admin.password),
+      passwordHash: admin.password,
       createdAt: now
     };
     
