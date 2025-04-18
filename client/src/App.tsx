@@ -47,7 +47,7 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="max-w-md mx-auto px-4 py-8 bg-gray-50 min-h-screen">
+      <div className="max-w-md mx-auto px-4 py-8 min-h-screen splash-background">
         <Router />
         <Toaster />
       </div>
