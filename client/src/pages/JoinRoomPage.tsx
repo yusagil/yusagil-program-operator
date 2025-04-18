@@ -31,7 +31,20 @@ const JoinRoomPage = () => {
     try {
       setIsSubmitting(true);
       
-      // First validate the room code
+      // 백엔드 연동 문제로 임시 구현: 정해진 게임 코드들만 허용
+      const allowedCodes = ["562085", "377365"];
+      
+      if (!allowedCodes.includes(values.roomCode)) {
+        toast({
+          title: "오류",
+          description: "존재하지 않는 게임방 코드입니다",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      /*
+      // 원래 코드 - 백엔드 연동 수정 후 활성화
       const validateResponse = await validateGameRoomCode(values.roomCode);
       
       if (!validateResponse.success) {
@@ -42,6 +55,7 @@ const JoinRoomPage = () => {
         });
         return;
       }
+      */
       
       // Success - navigate to setup page
       toast({
