@@ -1,6 +1,15 @@
 import { Request, Response, NextFunction } from "express";
 import { compareSync, hashSync } from "bcrypt";
 import { storage } from "./storage";
+import session from "express-session";
+
+// Extend the session type
+declare module "express-session" {
+  interface SessionData {
+    isAdmin: boolean;
+    adminUsername?: string;
+  }
+}
 
 // Function to hash password
 export function hashPassword(password: string): string {
@@ -26,15 +35,15 @@ export function requireAdmin(req: Request, res: Response, next: NextFunction) {
 // Initialize a default admin account if none exists
 export async function initializeAdmin() {
   try {
-    const adminExists = await storage.getAdminByUsername("admin");
+    const adminExists = await storage.getAdminByUsername("yusagil");
     
     if (!adminExists) {
       console.log("Creating default admin account...");
       await storage.createAdmin({
-        username: "admin",
-        password: hashPassword("admin1234")
+        username: "yusagil",
+        password: hashPassword("0528")
       });
-      console.log("Default admin account created with username 'admin' and password 'admin1234'");
+      console.log("Default admin account created with username 'yusagil' and password '0528'");
     }
   } catch (error) {
     console.error("Error initializing admin account:", error);

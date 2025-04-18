@@ -15,9 +15,8 @@ function generateRandomCode(length: number = 6): string {
   return result;
 }
 
-function hashPassword(password: string): string {
-  return crypto.createHash('sha256').update(password).digest('hex');
-}
+// Import bcrypt functions from auth.ts
+import { hashPassword, comparePassword } from './auth';
 
 export interface IStorage {
   // Game room operations
@@ -83,11 +82,8 @@ export class MemStorage implements IStorage {
     this.answerIdCounter = 1;
     this.adminIdCounter = 1;
     
-    // Create a default admin account
-    this.createAdmin({
-      username: "admin",
-      password: "admin123"  // This would be hashed in the createAdmin method
-    });
+    // Don't create a default admin in constructor
+    // We'll do it in initializeAdmin()
   }
   
   // Game room operations
@@ -494,8 +490,7 @@ export class MemStorage implements IStorage {
       return false;
     }
     
-    const hashedPassword = hashPassword(password);
-    return admin.passwordHash === hashedPassword;
+    return comparePassword(password, admin.passwordHash);
   }
 }
 
