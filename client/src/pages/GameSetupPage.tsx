@@ -53,8 +53,16 @@ const GameSetupPage = () => {
       const gameSessionId = 1;
       const userId = 1;
       
-      // Navigate to the question page
-      navigate(`/room/${roomCode}/game/${gameSessionId}/${userId}`);
+      // Add query parameters with user and partner information
+      const queryParams = new URLSearchParams({
+        userName: values.myName,
+        userSeatNumber: values.mySeatNumber.toString(),
+        partnerName: values.partnerName,
+        partnerSeatNumber: values.partnerSeatNumber.toString()
+      }).toString();
+      
+      // Navigate to the question page with query params
+      navigate(`/room/${roomCode}/game/${gameSessionId}/${userId}?${queryParams}`);
       
       /*
       const response = await startGame({

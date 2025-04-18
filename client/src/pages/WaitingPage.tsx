@@ -10,18 +10,27 @@ const WaitingPage = () => {
   const { toast } = useToast();
   
   const [isPolling, setIsPolling] = useState(true);
+  const [userName, setUserName] = useState<string>("");
   const [partnerName, setPartnerName] = useState<string>("");
+  const [userSeatNumber, setUserSeatNumber] = useState<number>(0);
+  const [partnerSeatNumber, setPartnerSeatNumber] = useState<number>(0);
   
   // Extract params
   const gameSessionId = parseInt(params.gameSessionId);
   const userId = parseInt(params.userId);
   
-  // Get partner details from query params
+  // Get user and partner details from query params
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
+    const userNameParam = searchParams.get("userName");
     const partnerNameParam = searchParams.get("partnerName");
+    const userSeatParam = searchParams.get("userSeatNumber");
+    const partnerSeatParam = searchParams.get("partnerSeatNumber");
     
+    if (userNameParam) setUserName(userNameParam);
     if (partnerNameParam) setPartnerName(partnerNameParam);
+    if (userSeatParam) setUserSeatNumber(parseInt(userSeatParam));
+    if (partnerSeatParam) setPartnerSeatNumber(parseInt(partnerSeatParam));
   }, []);
   
   // Check for invalid params

@@ -18,6 +18,8 @@ const QuestionPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [userName, setUserName] = useState<string>("");
   const [partnerName, setPartnerName] = useState<string>("");
+  const [userSeatNumber, setUserSeatNumber] = useState<number>(0);
+  const [partnerSeatNumber, setPartnerSeatNumber] = useState<number>(0);
   
   // Extract params
   const gameSessionId = parseInt(params.gameSessionId);
@@ -28,9 +30,13 @@ const QuestionPage = () => {
     const searchParams = new URLSearchParams(window.location.search);
     const userNameParam = searchParams.get("userName");
     const partnerNameParam = searchParams.get("partnerName");
+    const userSeatParam = searchParams.get("userSeatNumber");
+    const partnerSeatParam = searchParams.get("partnerSeatNumber");
     
     if (userNameParam) setUserName(userNameParam);
     if (partnerNameParam) setPartnerName(partnerNameParam);
+    if (userSeatParam) setUserSeatNumber(parseInt(userSeatParam));
+    if (partnerSeatParam) setPartnerSeatNumber(parseInt(partnerSeatParam));
   }, []);
   
   // Check for invalid params
@@ -101,9 +107,12 @@ const QuestionPage = () => {
       });
       
       if (result.success) {
-        // Navigate to waiting page with partner name
+        // Navigate to waiting page with all the user and partner information
         const queryParams = new URLSearchParams({
-          partnerName
+          userName,
+          userSeatNumber: userSeatNumber.toString(),
+          partnerName,
+          partnerSeatNumber: partnerSeatNumber.toString()
         }).toString();
         navigate(`/game/${gameSessionId}/${userId}/waiting?${queryParams}`);
       } else {
@@ -128,9 +137,15 @@ const QuestionPage = () => {
   return (
     <div className="fade-in">
       <div className="mb-6 text-center">
-        <div className="flex items-center justify-between mb-2">
-          <div className="text-sm text-gray-500">내 이름: {userName}</div>
-          <div className="text-sm text-gray-500">짝궁 이름: {partnerName}</div>
+        <div className="grid grid-cols-2 gap-2 mb-2">
+          <div className="text-left">
+            <div className="text-sm">내 이름: <span className="font-medium">{userName}</span></div>
+            <div className="text-sm">내 자리: <span className="font-medium">{userSeatNumber}번</span></div>
+          </div>
+          <div className="text-right">
+            <div className="text-sm">짝궁 이름: <span className="font-medium">{partnerName}</span></div>
+            <div className="text-sm">짝궁 자리: <span className="font-medium">{partnerSeatNumber}번</span></div>
+          </div>
         </div>
         <h2 className="text-xl font-bold">문제 {currentQuestion}/10</h2>
         <Progress 
