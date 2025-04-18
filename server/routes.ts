@@ -28,6 +28,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Setup cleanup schedule
   setupCleanupSchedule();
   
+  // Temporary endpoint for testing - create a game room without admin auth
+  app.get("/api/test/create-game-room", async (req: Request, res: Response) => {
+    try {
+      const gameRoom = await storage.createGameRoom(24);
+      res.json({
+        success: true,
+        gameRoom: {
+          id: gameRoom.id,
+          code: gameRoom.code,
+          createdAt: gameRoom.createdAt,
+          expiresAt: gameRoom.expiresAt
+        }
+      });
+    } catch (error) {
+      console.error("Error creating test game room:", error);
+      res.status(500).json({
+        success: false,
+        error: "게임방 생성 중 오류가 발생했습니다"
+      });
+    }
+  });
+  
   // API endpoint for admin login
   app.post("/api/admin/login", async (req: Request, res: Response) => {
     try {
