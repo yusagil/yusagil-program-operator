@@ -243,7 +243,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { roomCode, name, seatNumber } = gameRoomJoinSchema.parse(req.body);
       
       // Find the game room
-      const gameRoom = await storage.getGameRoomByCode(roomCode.toUpperCase());
+      const gameRoom = await storage.getGameRoomByCode(roomCode);
       
       if (!gameRoom) {
         return res.status(404).json({
@@ -315,7 +315,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { roomCode, myName, mySeatNumber, partnerSeatNumber } = gameSetupSchema.parse(req.body);
       
       // Find the game room
-      const gameRoom = await storage.getGameRoomByCode(roomCode.toUpperCase());
+      const gameRoom = await storage.getGameRoomByCode(roomCode);
       
       if (!gameRoom) {
         return res.status(404).json({
