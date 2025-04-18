@@ -116,7 +116,7 @@ export const answerSchema = z.object({
 });
 
 export const answerSubmissionSchema = z.object({
-  gameRoomId: z.number(),
+  gameRoomId: z.number().optional(),
   gameSessionId: z.number(),
   userId: z.number(),
   answers: z.array(answerSchema).length(10),

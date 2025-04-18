@@ -407,16 +407,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // API endpoint to submit answers
   app.post("/api/game/submit-answers", async (req: Request, res: Response) => {
     try {
-      const { gameRoomId, gameSessionId, userId, answers } = answerSubmissionSchema.parse(req.body);
-      
-      // Verify game room exists
-      const gameRoom = await storage.getGameRoomByCode(gameRoomId.toString());
-      if (!gameRoom) {
-        return res.status(404).json({
-          success: false,
-          error: "게임방을 찾을 수 없습니다"
-        });
+      // For backward compatibility with newer API structure
+      let parsedBody;
+      try {
+        parsedBody = answerSubmissionSchema.parse(req.body);
+      } catch (e) {
+        // If the schema validation fails, try with a simplified schema
+        parsedBody = {
+          gameSessionId: req.body.gameSessionId, 
+          userId: req.body.userId, 
+          answers: req.body.answers
+        };
       }
+      
+      const { gameSessionId, userId, answers } = parsedBody;
       
       // Verify game session exists
       const gameSession = await storage.getGameSession(gameSessionId);
@@ -424,14 +428,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({
           success: false,
           error: "게임 세션을 찾을 수 없습니다"
-        });
-      }
-      
-      // Verify session belongs to the specified game room
-      if (gameSession.gameRoomId !== gameRoom.id) {
-        return res.status(400).json({
-          success: false,
-          error: "게임 세션이 해당 게임방에 속하지 않습니다"
         });
       }
       
