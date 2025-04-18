@@ -7,7 +7,7 @@ import crypto from "crypto";
 
 // Helper functions
 function generateRandomCode(length: number = 6): string {
-  const characters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Removed similar looking characters
+  const characters = '0123456789'; // Only digits
   let result = '';
   for (let i = 0; i < length; i++) {
     result += characters.charAt(Math.floor(Math.random() * characters.length));

@@ -12,7 +12,7 @@ import { validateGameRoomCode, joinGameRoom } from "@/lib/api";
 
 // Form schema for joining a game room
 const formSchema = z.object({
-  roomCode: z.string().min(1, "게임방 코드를 입력해주세요"),
+  roomCode: z.string().length(6, "게임방 코드는 6자리 숫자입니다").regex(/^\d+$/, "게임방 코드는 숫자만 입력해주세요"),
   name: z.string().min(1, "이름을 입력해주세요"),
   seatNumber: z.coerce.number().int().min(1).max(12)
 });

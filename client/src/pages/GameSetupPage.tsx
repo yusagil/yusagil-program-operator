@@ -16,7 +16,7 @@ const formSchema = z.object({
   mySeatNumber: z.coerce.number().int().min(1).max(12),
   partnerSeatNumber: z.coerce.number().int().min(1).max(12)
 }).refine(data => data.mySeatNumber !== data.partnerSeatNumber, {
-  message: "자리 번호가 같을 수 없습니다",
+  message: "짝궁과 자리 번호가 같을 수 없습니다",
   path: ["partnerSeatNumber"]
 });
 
