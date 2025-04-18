@@ -102,9 +102,10 @@ const JoinRoomPage = () => {
                     <FormLabel>게임방 코드</FormLabel>
                     <FormControl>
                       <Input 
-                        placeholder="게임방 코드를 입력하세요"
+                        placeholder="게임방 코드 6자리 숫자를 입력하세요"
                         {...field}
-                        value={field.value.toUpperCase()}
+                        type="number"
+                        maxLength={6}
                       />
                     </FormControl>
                     <FormMessage />

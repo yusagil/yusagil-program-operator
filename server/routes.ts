@@ -210,7 +210,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // API endpoint to validate a game room code
   app.get("/api/game-rooms/:code/validate", async (req: Request, res: Response) => {
     try {
-      const code = req.params.code.toUpperCase();
+      const code = req.params.code;
       
       const gameRoom = await storage.getGameRoomByCode(code);
       

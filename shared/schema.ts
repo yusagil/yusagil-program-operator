@@ -86,18 +86,18 @@ export const insertAdminSchema = createInsertSchema(adminCredentials).omit({
 export const seatNumberSchema = z.number().int().min(1).max(12);
 
 export const gameRoomJoinSchema = z.object({
-  roomCode: z.string().min(1, "게임방 코드를 입력해주세요"),
+  roomCode: z.string().length(6, "게임방 코드는 6자리 숫자입니다").regex(/^\d+$/, "게임방 코드는 숫자만 입력해주세요"),
   name: z.string().min(1, "이름을 입력해주세요"),
   seatNumber: seatNumberSchema,
 });
 
 export const gameSetupSchema = z.object({
-  roomCode: z.string().min(1, "게임방 코드를 입력해주세요"),
+  roomCode: z.string().length(6, "게임방 코드는 6자리 숫자입니다").regex(/^\d+$/, "게임방 코드는 숫자만 입력해주세요"),
   myName: z.string().min(1, "이름을 입력해주세요"),
   mySeatNumber: seatNumberSchema, 
   partnerSeatNumber: seatNumberSchema,
 }).refine(data => data.mySeatNumber !== data.partnerSeatNumber, {
-  message: "자리 번호가 같을 수 없습니다",
+  message: "짝궁과 자리 번호가 같을 수 없습니다",
   path: ["partnerSeatNumber"],
 });
 
