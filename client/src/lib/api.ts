@@ -118,11 +118,13 @@ export async function submitAnswers(data: {
 // Get game results
 export async function getGameResults(
   gameSessionId: number,
-  userId: number
+  userId: number,
+  testMode: boolean = false
 ): Promise<ApiResponse<{
   status: "waiting" | "complete";
   results?: GameResult;
 }>> {
-  const res = await apiRequest("GET", `/api/game/${gameSessionId}/results/${userId}`);
+  const queryParams = testMode ? `?testMode=true` : '';
+  const res = await apiRequest("GET", `/api/game/${gameSessionId}/results/${userId}${queryParams}`);
   return await res.json();
 }

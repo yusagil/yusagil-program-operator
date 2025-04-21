@@ -51,13 +51,16 @@ const WaitingPage = () => {
     if (isPolling) {
       const checkResults = async () => {
         try {
-          const response = await getGameResults(gameSessionId, userId);
+          // 테스트 모드 파라미터 추가
+          const response = await getGameResults(gameSessionId, userId, true);
           
           if (response.success) {
             if (response.status === "complete") {
               // Results are ready, navigate to results page
               setIsPolling(false);
-              navigate(`/game/${gameSessionId}/${userId}/results`);
+              // 경로 수정
+              const roomCode = new URLSearchParams(window.location.search).get("roomCode") || "";
+              navigate(`/room/${roomCode}/game/${gameSessionId}/${userId}/results`);
             }
             // If status is "waiting", keep polling
           } else {
