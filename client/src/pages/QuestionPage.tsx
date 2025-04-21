@@ -7,7 +7,7 @@ import QuestionForm from "@/components/QuestionForm";
 import { submitAnswers } from "@/lib/api";
 
 const QuestionPage = () => {
-  const params = useParams<{ gameSessionId: string; userId: string }>();
+  const params = useParams<{ roomCode: string; gameSessionId: string; userId: string }>();
   const [location, navigate] = useLocation();
   const { toast } = useToast();
   
@@ -22,6 +22,7 @@ const QuestionPage = () => {
   const [partnerSeatNumber, setPartnerSeatNumber] = useState<number>(0);
   
   // Extract params
+  const roomCode = params.roomCode || "";
   const gameSessionId = parseInt(params.gameSessionId);
   const userId = parseInt(params.userId);
   
@@ -114,8 +115,7 @@ const QuestionPage = () => {
           partnerName,
           partnerSeatNumber: partnerSeatNumber.toString()
         }).toString();
-        // 라우팅 수정
-        const roomCode = new URLSearchParams(window.location.search).get("roomCode") || "";
+        // URL 경로 파라미터 사용
         navigate(`/room/${roomCode}/game/${gameSessionId}/${userId}/waiting?${queryParams}`);
       } else {
         toast({

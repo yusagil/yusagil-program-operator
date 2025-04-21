@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { getGameResults } from "@/lib/api";
 
 const WaitingPage = () => {
-  const params = useParams<{ gameSessionId: string; userId: string }>();
+  const params = useParams<{ roomCode: string; gameSessionId: string; userId: string }>();
   const [location, navigate] = useLocation();
   const { toast } = useToast();
   
@@ -16,6 +16,7 @@ const WaitingPage = () => {
   const [partnerSeatNumber, setPartnerSeatNumber] = useState<number>(0);
   
   // Extract params
+  const roomCode = params.roomCode || "";
   const gameSessionId = parseInt(params.gameSessionId);
   const userId = parseInt(params.userId);
   
@@ -59,8 +60,7 @@ const WaitingPage = () => {
             if (response.status === "complete") {
               // Results are ready, navigate to results page
               setIsPolling(false);
-              // 경로 수정
-              const roomCode = new URLSearchParams(window.location.search).get("roomCode") || "";
+              // URL 경로 파라미터 이용
               navigate(`/room/${roomCode}/game/${gameSessionId}/${userId}/results`);
             }
             // If status is "waiting", keep polling
