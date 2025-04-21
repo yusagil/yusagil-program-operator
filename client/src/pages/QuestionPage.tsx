@@ -114,7 +114,9 @@ const QuestionPage = () => {
           partnerName,
           partnerSeatNumber: partnerSeatNumber.toString()
         }).toString();
-        navigate(`/game/${gameSessionId}/${userId}/waiting?${queryParams}`);
+        // 라우팅 수정
+        const roomCode = new URLSearchParams(window.location.search).get("roomCode") || "";
+        navigate(`/room/${roomCode}/game/${gameSessionId}/${userId}/waiting?${queryParams}`);
       } else {
         toast({
           title: "제출 오류",

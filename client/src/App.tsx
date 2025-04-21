@@ -9,6 +9,7 @@ import GameSetupPage from "@/pages/GameSetupPage";
 import QuestionPage from "@/pages/QuestionPage";
 import WaitingPage from "@/pages/WaitingPage";
 import ResultsPage from "@/pages/ResultsPage";
+import RankingTestPage from "@/pages/RankingTestPage";
 import AdminLoginPage from "@/pages/admin/AdminLoginPage";
 import AdminDashboardPage from "@/pages/admin/AdminDashboardPage";
 import AdminGameRoomPage from "@/pages/admin/AdminGameRoomPage";
@@ -30,6 +31,9 @@ function Router() {
       <Route path="/game/:gameSessionId/:userId" component={QuestionPage} />
       <Route path="/game/:gameSessionId/:userId/waiting" component={WaitingPage} />
       <Route path="/game/:gameSessionId/:userId/results" component={ResultsPage} />
+      
+      {/* 테스트 라우트 */}
+      <Route path="/ranking-test" component={RankingTestPage} />
       
       {/* Admin routes */}
       <Route path="/admin" component={AdminLoginPage} />
