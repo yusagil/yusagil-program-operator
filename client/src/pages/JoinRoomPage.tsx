@@ -32,7 +32,7 @@ const JoinRoomPage = () => {
       setIsSubmitting(true);
       
       // 백엔드 연동 문제로 임시 구현: 정해진 게임 코드들만 허용
-      const allowedCodes = ["562085", "377365"];
+      const allowedCodes = ["562085", "377365", "200942"];
       
       if (!allowedCodes.includes(values.roomCode)) {
         toast({
@@ -100,7 +100,8 @@ const JoinRoomPage = () => {
                       <Input 
                         placeholder="게임방 코드 6자리 숫자를 입력하세요"
                         {...field}
-                        type="number"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
                         maxLength={6}
                       />
                     </FormControl>
