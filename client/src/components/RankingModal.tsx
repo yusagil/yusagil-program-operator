@@ -34,13 +34,32 @@ const RankingModal = ({ open, onOpenChange, gameRoomId }: RankingModalProps) => 
         // const response = await fetch(`/api/rankings/${gameRoomId}`);
         // const data = await response.json();
         
-        // 임시 데이터로 랭킹 표시
+        // 임시 데이터로 랭킹 표시 (12명 = 6쌍)
         const mockData: UserScoreSummary[] = [
-          { userId: 1, name: "김영수", seatNumber: 3, partnerId: 2, partnerName: "이지연", partnerSeatNumber: 7, correctCount: 9, totalQuestions: 10 },
-          { userId: 3, name: "박민지", seatNumber: 5, partnerId: 4, partnerName: "최재원", partnerSeatNumber: 8, correctCount: 8, totalQuestions: 10 },
-          { userId: 5, name: "정현우", seatNumber: 2, partnerId: 6, partnerName: "한미영", partnerSeatNumber: 9, correctCount: 7, totalQuestions: 10 },
-          { userId: 7, name: "윤서진", seatNumber: 4, partnerId: 8, partnerName: "강도현", partnerSeatNumber: 1, correctCount: 6, totalQuestions: 10 },
-          { userId: 9, name: "송지원", seatNumber: 6, partnerId: 10, partnerName: "임준영", partnerSeatNumber: 10, correctCount: 5, totalQuestions: 10 },
+          // 1번 자리
+          { userId: 1, name: "김영수", seatNumber: 1, partnerId: 2, partnerName: "이지연", partnerSeatNumber: 7, correctCount: 10, totalQuestions: 10 },
+          // 2번 자리
+          { userId: 3, name: "박민지", seatNumber: 2, partnerId: 4, partnerName: "최재원", partnerSeatNumber: 8, correctCount: 9, totalQuestions: 10 },
+          // 3번 자리
+          { userId: 5, name: "정현우", seatNumber: 3, partnerId: 6, partnerName: "한미영", partnerSeatNumber: 9, correctCount: 8, totalQuestions: 10 },
+          // 4번 자리
+          { userId: 7, name: "윤서진", seatNumber: 4, partnerId: 8, partnerName: "강도현", partnerSeatNumber: 10, correctCount: 7, totalQuestions: 10 },
+          // 5번 자리
+          { userId: 9, name: "송지원", seatNumber: 5, partnerId: 10, partnerName: "임준영", partnerSeatNumber: 11, correctCount: 6, totalQuestions: 10 },
+          // 6번 자리
+          { userId: 11, name: "조현진", seatNumber: 6, partnerId: 12, partnerName: "황보라", partnerSeatNumber: 12, correctCount: 5, totalQuestions: 10 },
+          // 7번 자리 (짝궁)
+          { userId: 2, name: "이지연", seatNumber: 7, partnerId: 1, partnerName: "김영수", partnerSeatNumber: 1, correctCount: 9, totalQuestions: 10 },
+          // 8번 자리 (짝궁)
+          { userId: 4, name: "최재원", seatNumber: 8, partnerId: 3, partnerName: "박민지", partnerSeatNumber: 2, correctCount: 8, totalQuestions: 10 },
+          // 9번 자리 (짝궁)
+          { userId: 6, name: "한미영", seatNumber: 9, partnerId: 5, partnerName: "정현우", partnerSeatNumber: 3, correctCount: 7, totalQuestions: 10 },
+          // 10번 자리 (짝궁)
+          { userId: 8, name: "강도현", seatNumber: 10, partnerId: 7, partnerName: "윤서진", partnerSeatNumber: 4, correctCount: 6, totalQuestions: 10 },
+          // 11번 자리 (짝궁)
+          { userId: 10, name: "임준영", seatNumber: 11, partnerId: 9, partnerName: "송지원", partnerSeatNumber: 5, correctCount: 4, totalQuestions: 10 },
+          // 12번 자리 (짝궁)
+          { userId: 12, name: "황보라", seatNumber: 12, partnerId: 11, partnerName: "조현진", partnerSeatNumber: 6, correctCount: 3, totalQuestions: 10 },
         ];
         
         // 맞춘 개수순으로 정렬
@@ -76,7 +95,7 @@ const RankingModal = ({ open, onOpenChange, gameRoomId }: RankingModalProps) => 
           ) : error ? (
             <div className="text-center text-red-500 py-4">{error}</div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-2">
               {rankings.map((user, index) => (
                 <div 
                   key={user.userId} 

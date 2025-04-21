@@ -92,10 +92,13 @@ const ResultsPage = () => {
         <p className="text-lg mb-1">
           <span className="font-bold">{results.partnerName}</span>님의 답변을 맞춘 결과입니다
         </p>
-        <p className="text-gray-600">
-          총 <span className="font-bold text-primary">{results.correctCount}</span>개의 
-          짝궁 답변을 맞추었습니다!
-        </p>
+        <div className="mt-3 bg-green-50 p-3 rounded-lg border border-green-200 inline-block">
+          <p className="text-gray-700">
+            총 <span className="font-bold text-primary text-xl">{results.correctCount}</span>개의 
+            짝궁 답변을 맞추었습니다!
+          </p>
+          <p className="text-xs text-gray-500 mt-1">랭킹에서 순위를 확인해보세요</p>
+        </div>
       </div>
       
       <div className="space-y-4 mb-8">
