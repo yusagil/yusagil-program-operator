@@ -51,8 +51,9 @@ const WaitingPage = () => {
     if (isPolling) {
       const checkResults = async () => {
         try {
-          // 테스트 모드 파라미터 추가
-          const response = await getGameResults(gameSessionId, userId, true);
+          // 테스트 모드 파라미터 추가해서 짝궁 답변 자동 생성
+          const testMode = true; // 테스트를 위해 항상 true로 설정
+          const response = await getGameResults(gameSessionId, userId, testMode);
           
           if (response.success) {
             if (response.status === "complete") {

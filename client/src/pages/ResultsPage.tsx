@@ -21,6 +21,9 @@ const ResultsPage = () => {
   const gameSessionId = parseInt(params.gameSessionId);
   const userId = parseInt(params.userId);
   
+  // 테스트 모드 설정
+  const testMode = true; // 테스트 목적으로 항상 true로 설정
+  
   // Fetch results
   useEffect(() => {
     const fetchResults = async () => {
@@ -35,7 +38,7 @@ const ResultsPage = () => {
       }
       
       try {
-        const response = await getGameResults(gameSessionId, userId);
+        const response = await getGameResults(gameSessionId, userId, testMode);
         
         if (response.success && response.status === "complete") {
           setResults(response.results || null);
