@@ -2,7 +2,6 @@ import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
-import YusagilLogo from "@/components/YusagilLogo";
 import NotFound from "@/pages/not-found";
 import WelcomePage from "@/pages/WelcomePage";
 import JoinRoomPage from "@/pages/JoinRoomPage";
@@ -49,9 +48,6 @@ function App() {
       <div className="max-w-md mx-auto px-4 py-8 bg-gray-50 min-h-screen">
         <Router />
         <Toaster />
-        <footer className="mt-8 pt-4 border-t border-gray-200">
-          <YusagilLogo className="mt-2" size="small" />
-        </footer>
       </div>
     </QueryClientProvider>
   );
