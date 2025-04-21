@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { GameResult } from "@shared/schema";
 import { getGameResults } from "@/lib/api";
 import ResultCard from "@/components/ResultCard";
+import RankingModal from "@/components/RankingModal";
 
 const ResultsPage = () => {
   const params = useParams<{ roomCode: string; gameSessionId: string; userId: string }>();
@@ -13,6 +14,7 @@ const ResultsPage = () => {
   
   const [results, setResults] = useState<GameResult | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRankingOpen, setIsRankingOpen] = useState(false);
   
   // Extract params
   const roomCode = params.roomCode || "";
@@ -102,12 +104,29 @@ const ResultsPage = () => {
         ))}
       </div>
       
-      <Button 
-        className="w-full"
-        onClick={handleRestart}
-      >
-        다시 시작하기
-      </Button>
+      <div className="space-y-4">
+        <Button 
+          className="w-full"
+          variant="outline"
+          onClick={() => setIsRankingOpen(true)}
+        >
+          랭킹 보기
+        </Button>
+
+        <Button 
+          className="w-full"
+          onClick={handleRestart}
+        >
+          다시 시작하기
+        </Button>
+      </div>
+
+      {/* 랭킹 모달 */}
+      <RankingModal
+        open={isRankingOpen}
+        onOpenChange={setIsRankingOpen}
+        gameRoomId={results.gameRoomId}
+      />
     </div>
   );
 };
