@@ -53,7 +53,7 @@ const FortuneModal = ({ open, onOpenChange }: FortuneModalProps) => {
           />
 
           <div className="relative z-10 p-6 text-center">
-            <DialogTitle className="text-xl text-white mb-6 mt-2">오늘의 운세</DialogTitle>
+            <DialogTitle className="text-xl text-gray-800 mb-6 mt-2 bg-white bg-opacity-80 rounded-lg py-2">오늘의 운세</DialogTitle>
             
             {!isRevealing ? (
               <div className="flex flex-col items-center justify-center p-6">
@@ -88,7 +88,7 @@ const FortuneModal = ({ open, onOpenChange }: FortuneModalProps) => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5 }}
-                  className="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-6 shadow-xl"
+                  className="bg-white bg-opacity-90 backdrop-blur-sm rounded-lg p-6 shadow-xl"
                 >
                   {/* 운세 메시지 */}
                   <motion.div 
@@ -97,8 +97,8 @@ const FortuneModal = ({ open, onOpenChange }: FortuneModalProps) => {
                     transition={{ delay: 0.3, duration: 0.5 }}
                     className="mb-6"
                   >
-                    <h3 className="text-lg font-medium text-white mb-2">오늘의 운세</h3>
-                    <p className="text-xl text-white font-bold py-3 border-b border-white border-opacity-20">
+                    <h3 className="text-lg font-medium text-gray-800 mb-2">오늘의 운세</h3>
+                    <p className="text-xl text-gray-800 font-bold py-3 border-b border-gray-300">
                       {fortune?.message}
                     </p>
                   </motion.div>
@@ -109,8 +109,8 @@ const FortuneModal = ({ open, onOpenChange }: FortuneModalProps) => {
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.8, duration: 0.5 }}
                   >
-                    <h3 className="text-lg font-medium text-white mb-2">인연을 높이는 팁</h3>
-                    <p className="text-white text-lg">
+                    <h3 className="text-lg font-medium text-gray-800 mb-2">인연을 높이는 팁</h3>
+                    <p className="text-gray-800 text-lg">
                       {fortune?.tip}
                     </p>
                   </motion.div>
