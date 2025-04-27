@@ -6,6 +6,7 @@ import { GameResult } from "@shared/schema";
 import { getGameResults } from "@/lib/api";
 import ResultCard from "@/components/ResultCard";
 import RankingModal from "@/components/RankingModal";
+import FortuneModal from "@/components/FortuneModal";
 
 const ResultsPage = () => {
   const params = useParams<{ roomCode: string; gameSessionId: string; userId: string }>();
@@ -15,6 +16,7 @@ const ResultsPage = () => {
   const [results, setResults] = useState<GameResult | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRankingOpen, setIsRankingOpen] = useState(false);
+  const [isFortuneOpen, setIsFortuneOpen] = useState(false);
   
   // Extract params
   const roomCode = params.roomCode || "";
@@ -120,6 +122,13 @@ const ResultsPage = () => {
         </Button>
 
         <Button 
+          className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+          onClick={() => setIsFortuneOpen(true)}
+        >
+          오늘의 운세 뽑기 ➝
+        </Button>
+
+        <Button 
           className="w-full"
           onClick={handleRestart}
         >
@@ -132,6 +141,12 @@ const ResultsPage = () => {
         open={isRankingOpen}
         onOpenChange={setIsRankingOpen}
         gameRoomId={results.gameRoomId}
+      />
+
+      {/* 운세 모달 */}
+      <FortuneModal
+        open={isFortuneOpen}
+        onOpenChange={setIsFortuneOpen}
       />
     </div>
   );
