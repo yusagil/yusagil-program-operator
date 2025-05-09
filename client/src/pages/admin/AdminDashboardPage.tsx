@@ -1,23 +1,28 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation, Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Clock, 
-  LogOut, 
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Clock,
+  Clipboard,
+  LogOut,
+  MinusCircle,
   Plus,
   PlusCircle,
-  MinusCircle, 
-  Users,
-  Clipboard,
   RefreshCw,
-  Trash
+  Trash,
+  Users,
 } from "lucide-react";
 import { adminLogout, createGameRoom, getActiveGameRooms } from "@/lib/api";
 
@@ -32,6 +37,7 @@ const AdminDashboardPage = () => {
   const [location, navigate] = useLocation();
   const { toast } = useToast();
   
+  // 게임방 목록 상태
   const [gameRooms, setGameRooms] = useState<GameRoom[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [expiryHours, setExpiryHours] = useState(24);
@@ -180,8 +186,6 @@ const AdminDashboardPage = () => {
     }));
   };
   
-  // 짝궁 설정 제거
-  
   const handleCreateRoom = async () => {
     if (expiryHours < 1 || expiryHours > 72) {
       toast({
@@ -208,7 +212,7 @@ const AdminDashboardPage = () => {
     setIsCreating(true);
     
     try {
-      // 로그인 중인지 확인을 위한 더미 파트너 설정 - 짝궁 설정은 사용자가 직접 함
+      // 더미 파트너 설정 (짝궁은 사용자가 직접 입력)
       const dummyPartnerConfig: Record<string, number> = {};
       for (let i = 1; i <= totalParticipants; i++) {
         const nextIndex = i === totalParticipants ? 1 : i + 1;
@@ -367,7 +371,7 @@ const AdminDashboardPage = () => {
                 </div>
               </div>
               <div className="text-sm text-gray-500 mt-2">
-                총 참가자 수를 설정하면 자동으로 기본 팀 구성과 짝궁 설정이 생성됩니다.
+                총 참가자 수를 설정하면 자동으로 기본 팀 구성이 생성됩니다.
               </div>
             </TabsContent>
             
@@ -453,8 +457,6 @@ const AdminDashboardPage = () => {
                 </Card>
               ))}
             </TabsContent>
-            
-            {/* 짝궁 설정 탭 제거 */}
           </Tabs>
           
           <div className="flex justify-end mt-6">
