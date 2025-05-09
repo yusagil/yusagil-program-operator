@@ -20,6 +20,9 @@ const WaitingPage = () => {
   const gameSessionId = parseInt(params.gameSessionId);
   const userId = parseInt(params.userId);
   
+  // 대기 상태 메시지
+  const [waitingMessage, setWaitingMessage] = useState("잠시만 기다려주세요...");
+  
   // Get user and partner details from query params
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
@@ -52,8 +55,8 @@ const WaitingPage = () => {
     if (isPolling) {
       const checkResults = async () => {
         try {
-          // 테스트 모드 파라미터 추가해서 짝궁 답변 자동 생성
-          const testMode = true; // 테스트를 위해 항상 true로 설정
+          // 테스트 모드를 사용하지 않고 실제 파트너 답변을 기다림
+          const testMode = false; // 자동으로 파트너 답변을 생성하지 않음
           const response = await getGameResults(gameSessionId, userId, testMode);
           
           if (response.success) {
@@ -62,8 +65,12 @@ const WaitingPage = () => {
               setIsPolling(false);
               // URL 경로 파라미터 이용
               navigate(`/room/${roomCode}/game/${gameSessionId}/${userId}/results`);
+            } else if (response.status === "waiting") {
+              // 대기 메시지 업데이트
+              const waitingCount = Math.floor(Math.random() * 3) + 1;
+              setWaitingMessage(`잠시만 기다려주세요${'.'.repeat(waitingCount)}`);
+              // 계속 대기 (polling 유지)
             }
-            // If status is "waiting", keep polling
           } else {
             // Error occurred
             toast({
@@ -102,12 +109,23 @@ const WaitingPage = () => {
     <div className="fade-in text-center">
       <Card className="mb-8">
         <CardContent className="p-8 flex flex-col items-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-primary border-solid mb-6"></div>
+          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-purple-500 border-solid mb-6"></div>
           <h2 className="text-xl font-bold mb-3">답변 제출 완료!</h2>
           <p className="text-gray-600 mb-4">
-            <span className="font-bold">{partnerName}</span>님이 아직 제출 중입니다.
+            <span className="font-bold text-purple-600">{partnerName || "짝궁"}</span>님이 아직 답변을 완료하지 않았습니다.
           </p>
-          <p className="text-gray-600">잠시만 기다려주세요...</p>
+          <div className="p-4 bg-purple-50 rounded-lg border border-purple-100 mb-4">
+            <p className="text-gray-800 mb-2 font-medium">결과 확인을 위해 필요한 사항:</p>
+            <ul className="text-left text-gray-700 space-y-2">
+              <li className="flex items-center">
+                <span className="text-green-500 mr-2">✓</span> <span>내가 답변 제출 완료</span>
+              </li>
+              <li className="flex items-center">
+                <span className="text-yellow-500 mr-2">⌛</span> <span>짝궁의 답변 제출 대기 중</span>
+              </li>
+            </ul>
+          </div>
+          <p className="text-gray-600 font-medium animate-pulse">{waitingMessage}</p>
         </CardContent>
       </Card>
     </div>
