@@ -122,6 +122,11 @@ export async function getGameResults(
   testMode: boolean = false
 ): Promise<ApiResponse<{
   status: "waiting" | "complete";
+  message?: string;
+  progress?: {
+    total: number;
+    completed: number;
+  };
   results?: GameResult;
 }>> {
   const queryParams = testMode ? `?testMode=true` : '';

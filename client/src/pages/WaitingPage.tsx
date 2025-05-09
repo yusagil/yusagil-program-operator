@@ -20,8 +20,9 @@ const WaitingPage = () => {
   const gameSessionId = parseInt(params.gameSessionId);
   const userId = parseInt(params.userId);
   
-  // 대기 상태 메시지
+  // 대기 상태 관련
   const [waitingMessage, setWaitingMessage] = useState("잠시만 기다려주세요...");
+  const [partnerProgress, setPartnerProgress] = useState(0);
   
   // Get user and partner details from query params
   useEffect(() => {
@@ -69,6 +70,13 @@ const WaitingPage = () => {
               // 대기 메시지 업데이트
               const waitingCount = Math.floor(Math.random() * 3) + 1;
               setWaitingMessage(`잠시만 기다려주세요${'.'.repeat(waitingCount)}`);
+              
+              // 진행 상황 업데이트 (서버에서 제공할 경우)
+              const progressData = (response as any).progress;
+              if (progressData && typeof progressData.completed === 'number') {
+                setPartnerProgress(progressData.completed);
+              }
+              
               // 계속 대기 (polling 유지)
             }
           } else {
@@ -125,6 +133,22 @@ const WaitingPage = () => {
               </li>
             </ul>
           </div>
+          
+          {partnerProgress > 0 && (
+            <div className="w-full mb-4">
+              <div className="flex justify-between mb-1">
+                <span className="text-sm font-medium text-gray-700">짝궁의 답변 진행률</span>
+                <span className="text-sm font-medium text-purple-600">{partnerProgress}/10</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2.5">
+                <div 
+                  className="bg-purple-600 h-2.5 rounded-full transition-all duration-500 ease-in-out" 
+                  style={{ width: `${(partnerProgress / 10) * 100}%` }}
+                ></div>
+              </div>
+            </div>
+          )}
+          
           <p className="text-gray-600 font-medium animate-pulse">{waitingMessage}</p>
         </CardContent>
       </Card>

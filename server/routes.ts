@@ -595,33 +595,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // 개발 모드 - 파트너 답변 자동 생성
+      // 파트너 답변 확인 - 완료되지 않았다면 대기 상태 반환
       if (partnerAnswers.length < 10) {
-        // 테스트 모드인 경우 파트너 답변도 생성해서 바로 결과 보여주기
-        const testMode = req.query.testMode === "true";
-        
-        if (testMode) {
-          console.log(`Test mode: Automatically generating partner answers`);
-          
-          // 파트너 답변 자동 생성
-          for (let i = 1; i <= 10; i++) {
-            if (!partnerAnswers.some(a => a.questionNumber === i)) {
-              await storage.saveAnswer({
-                gameSessionId,
-                userId: partnerId,
-                questionNumber: i,
-                myAnswer: `파트너 답변 ${i}`,
-                partnerGuess: `파트너 추측 ${i}`
-              });
-            }
+        // 테스트 모드는 더 이상 지원하지 않음 - 실제 파트너 답변이 필요함
+        return res.json({
+          success: true,
+          status: "waiting",
+          message: "짝궁이 답변을 완료할 때까지 기다리고 있습니다",
+          progress: {
+            total: 10,
+            completed: partnerAnswers.length
           }
-        } else {
-          return res.json({
-            success: true,
-            status: "waiting",
-            message: "짝궁이 답변을 완료할 때까지 기다리고 있습니다"
-          });
-        }
+        });
       }
       
       // Both users have submitted all answers, calculate results
