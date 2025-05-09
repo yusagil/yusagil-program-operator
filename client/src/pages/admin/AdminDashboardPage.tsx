@@ -153,7 +153,7 @@ const AdminDashboardPage = () => {
           title: "로그아웃 성공",
           description: "관리자 계정에서 로그아웃되었습니다.",
         });
-        navigate("/admin");
+        navigate("/manage");
       } else {
         toast({
           title: "로그아웃 실패",
@@ -265,7 +265,7 @@ const AdminDashboardPage = () => {
                         </div>
                       </div>
                     </div>
-                    <Link href={`/admin/rooms/${room.id}`}>
+                    <Link href={`/manage/rooms/${room.id}`}>
                       <Button>
                         <Users className="h-4 w-4 mr-2" />
                         관리하기

@@ -42,10 +42,13 @@ function Router() {
       <Route path="/manage/dashboard" component={AdminDashboardPage} />
       <Route path="/manage/rooms/:roomId" component={AdminGameRoomPage} />
       
-      {/* Legacy admin routes for backward compatibility */}
-      <Route path="/admin" component={() => { window.location.href = "/manage"; return null; }} />
-      <Route path="/admin/dashboard" component={() => { window.location.href = "/manage/dashboard"; return null; }} />
-      <Route path="/admin/rooms/:roomId" component={(params) => { window.location.href = `/manage/rooms/${params.roomId}`; return null; }} />
+      {/* Legacy admin routes redirect to new admin routes */}
+      <Route path="/admin">
+        {() => {
+          window.location.href = "/manage";
+          return null;
+        }}
+      </Route>
       
       {/* Fallback route */}
       <Route component={NotFound} />
