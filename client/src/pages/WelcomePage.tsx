@@ -9,7 +9,7 @@ const WelcomePage = () => {
     <div className="fade-in text-center">
       <h1 className="text-3xl font-bold mb-6">내 짝궁 맞춰봐</h1>
       
-      <Card className="mb-6">
+      <Card>
         <CardHeader>
           <CardTitle className="text-xl">게임 참여하기</CardTitle>
         </CardHeader>
@@ -19,28 +19,10 @@ const WelcomePage = () => {
             상대방의 답변을 얼마나 잘 맞출 수 있는지 확인해보세요!
           </p>
           <Button 
-            className="w-full"
+            className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
             onClick={() => navigate("/join")}
           >
             게임방 입장하기
-          </Button>
-        </CardContent>
-      </Card>
-      
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-xl">관리자</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-gray-600 mb-4">
-            관리자는 게임방을 생성하고 결과를 확인할 수 있습니다.
-          </p>
-          <Button 
-            variant="outline"
-            className="w-full"
-            onClick={() => navigate("/admin")}
-          >
-            관리자 로그인
           </Button>
         </CardContent>
       </Card>

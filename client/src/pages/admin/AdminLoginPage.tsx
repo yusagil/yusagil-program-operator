@@ -24,7 +24,7 @@ const AdminLoginPage = () => {
         title: "로그인 성공",
         description: "관리자 대시보드로 이동합니다.",
       });
-      navigate("/admin/dashboard");
+      navigate("/manage/dashboard");
       return;
     }
     
@@ -48,7 +48,7 @@ const AdminLoginPage = () => {
           title: "로그인 성공",
           description: "관리자 대시보드로 이동합니다.",
         });
-        navigate("/admin/dashboard");
+        navigate("/manage/dashboard");
       } else {
         toast({
           title: "로그인 실패",
