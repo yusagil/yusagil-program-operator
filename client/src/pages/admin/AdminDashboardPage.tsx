@@ -23,6 +23,7 @@ import {
   RefreshCw,
   Trash,
   Users,
+  ArrowRight,
 } from "lucide-react";
 import { adminLogout, createGameRoom, getActiveGameRooms } from "@/lib/api";
 
@@ -118,6 +119,30 @@ const AdminDashboardPage = () => {
     });
     setTeamCount(1);
   }, [totalParticipants]);
+  
+  // 기본 설정 완료 후 다음 단계로 이동하는 함수
+  const handleBasicSettingsComplete = () => {
+    if (totalParticipants < 2 || totalParticipants > 20) {
+      toast({
+        title: "입력 오류",
+        description: "총 참가자 수는 2~20명 사이로 입력해주세요.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (expiryHours < 1 || expiryHours > 72) {
+      toast({
+        title: "입력 오류",
+        description: "유효 기간은 1~72시간 사이로 입력해주세요.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // 팀 구성 단계로 이동
+    setActiveTab("teams");
+  };
   
   // 팀 추가
   const addTeam = () => {
@@ -398,6 +423,15 @@ const AdminDashboardPage = () => {
               <div className="text-sm text-gray-500 mt-2">
                 총 참가자 수를 설정하면 자동으로 기본 팀 구성이 생성됩니다.
               </div>
+              <div className="flex justify-end mt-6">
+                <Button 
+                  onClick={handleBasicSettingsComplete} 
+                  disabled={isCreating}
+                >
+                  <ArrowRight className="h-4 w-4 mr-2" />
+                  다음 단계: 팀 구성
+                </Button>
+              </div>
             </TabsContent>
             
             <TabsContent value="teams" className="space-y-4">
@@ -481,19 +515,19 @@ const AdminDashboardPage = () => {
                   </CardContent>
                 </Card>
               ))}
+              
+              <div className="flex justify-end mt-6">
+                <Button 
+                  onClick={handleCreateRoom} 
+                  disabled={isCreating || isLoading}
+                  size="lg"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  {isCreating ? "생성 중..." : "게임방 생성하기"}
+                </Button>
+              </div>
             </TabsContent>
           </Tabs>
-          
-          <div className="flex justify-end mt-6">
-            <Button 
-              onClick={handleCreateRoom} 
-              disabled={isCreating || isLoading}
-              size="lg"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              {isCreating ? "생성 중..." : "게임방 생성하기"}
-            </Button>
-          </div>
         </CardContent>
       </Card>
       
