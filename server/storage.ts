@@ -24,6 +24,12 @@ export interface IStorage {
   getGameRoomByCode(code: string): Promise<GameRoom | undefined>;
   getActiveGameRooms(): Promise<GameRoom[]>;
   deactivateGameRoom(id: number): Promise<GameRoom>;
+  updateGameRoomConfig(
+    id: number, 
+    totalParticipants: number,
+    teamConfig: Record<string, number[]>,
+    partnerConfig: Record<string, number>
+  ): Promise<GameRoom>;
   cleanupExpiredGameRooms(): Promise<void>;
   
   // User operations
@@ -134,6 +140,28 @@ export class MemStorage implements IStorage {
     }
     
     const updatedRoom = { ...room, isActive: false };
+    this.gameRooms.set(id, updatedRoom);
+    return updatedRoom;
+  }
+  
+  // 게임방 설정 업데이트 (총 참가자 수, 팀 구성, 짝궁 설정)
+  async updateGameRoomConfig(
+    id: number, 
+    totalParticipants: number,
+    teamConfig: Record<string, number[]>,
+    partnerConfig: Record<string, number>
+  ): Promise<GameRoom> {
+    const room = this.gameRooms.get(id);
+    if (!room) {
+      throw new Error(`Game room not found with id ${id}`);
+    }
+    
+    const updatedRoom = { 
+      ...room, 
+      totalParticipants,
+      teamConfig,
+      partnerConfig
+    };
     this.gameRooms.set(id, updatedRoom);
     return updatedRoom;
   }

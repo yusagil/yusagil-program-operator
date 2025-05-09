@@ -119,10 +119,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // API endpoint to create a new game room (admin only)
   app.post("/api/admin/game-rooms", requireAdmin, async (req: Request, res: Response) => {
     try {
-      const { expiryHours } = createGameRoomSchema.parse(req.body);
+      const { expiryHours, totalParticipants, teamConfig, partnerConfig } = createGameRoomSchema.parse(req.body);
       
+      // 새 게임방 생성
       const gameRoom = await storage.createGameRoom(expiryHours);
       
+      // 추가 정보를 DB에 저장
+      if (gameRoom) {
+        // 총 참가자 수 업데이트
+        if (totalParticipants && totalParticipants > 0) {
+          // Note: In a real database implementation, you would use db.update() here
+          // For MemStorage, we're directly manipulating the object
+          const updatedRoom = await storage.updateGameRoomConfig(
+            gameRoom.id, 
+            totalParticipants, 
+            teamConfig || {}, 
+            partnerConfig || {}
+          );
+        }
+      }
+      
+      // 게임방 정보 반환
       res.json({
         success: true,
         gameRoom: {
