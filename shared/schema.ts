@@ -11,6 +11,7 @@ export const gameRooms = pgTable("game_rooms", {
   expiresAt: timestamp("expires_at").notNull(), // Auto-expire after 24 hours
   totalParticipants: integer("total_participants").default(0), // Total number of participants
   teamConfig: jsonb("team_config").default('{}'), // JSON configuration for teams
+  partnerConfig: jsonb("partner_config").default('{}'), // Partner assignments
 });
 
 export const insertGameRoomSchema = createInsertSchema(gameRooms).pick({

@@ -230,7 +230,7 @@ const AdminDashboardPage = () => {
     
     // 팀 구성원 총합이 전체 인원수와 맞는지 확인
     const allMembers = Object.values(teamConfig).flat();
-    const uniqueMembers = [...new Set(allMembers)];
+    const uniqueMembers = Array.from(new Set(allMembers));
     
     if (uniqueMembers.length !== totalParticipants) {
       toast({

@@ -113,7 +113,10 @@ export class MemStorage implements IStorage {
       code: code!,
       isActive: true,
       createdAt: now,
-      expiresAt: expiresAt
+      expiresAt: expiresAt,
+      totalParticipants: 0,
+      teamConfig: {},
+      partnerConfig: {}
     };
     
     this.gameRooms.set(newGameRoom.id, newGameRoom);
