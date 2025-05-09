@@ -59,11 +59,16 @@ const AdminDashboardPage = () => {
       
       if (response.success) {
         // Date 객체로 변환하여 저장
-        setGameRooms(response.gameRooms.map(room => ({
+        const processedRooms = response.gameRooms.map(room => ({
           ...room,
           createdAt: new Date(room.createdAt),
           expiresAt: new Date(room.expiresAt)
-        })));
+        }));
+        
+        setGameRooms(processedRooms);
+        
+        // 로컬 스토리지에 임시 저장 (새로고침해도 유지)
+        localStorage.setItem("tempGameRooms", JSON.stringify(processedRooms));
       } else {
         // 오류 메시지 표시
         toast({
@@ -74,11 +79,26 @@ const AdminDashboardPage = () => {
       }
     } catch (error) {
       console.error("Error fetching game rooms:", error);
-      toast({
-        title: "네트워크 오류",
-        description: "게임방 정보를 불러올 수 없습니다. 네트워크 연결을 확인해주세요.",
-        variant: "destructive",
-      });
+      
+      // 오류 발생시 로컬 스토리지에서 불러오기
+      try {
+        const roomsJson = localStorage.getItem("tempGameRooms");
+        if (roomsJson) {
+          const savedRooms = JSON.parse(roomsJson);
+          setGameRooms(savedRooms.map((room: any) => ({
+            ...room,
+            createdAt: new Date(room.createdAt),
+            expiresAt: new Date(room.expiresAt)
+          })));
+        }
+      } catch (localError) {
+        console.error("Error loading from local storage:", localError);
+        toast({
+          title: "데이터 로딩 오류",
+          description: "저장된 게임방 정보를 불러올 수 없습니다.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -243,15 +263,18 @@ const AdminDashboardPage = () => {
         
         if (!roomExists) {
           // DB에서 가져온 목록에 없으면 로컬에 추가 (임시 대응)
-          setGameRooms(prevRooms => [
-            ...prevRooms,
-            {
-              id: createdRoom.id,
-              code: createdRoom.code,
-              createdAt: new Date(),
-              expiresAt: new Date(createdRoom.expiresAt)
-            }
-          ]);
+          const newRoom = {
+            id: createdRoom.id,
+            code: createdRoom.code,
+            createdAt: new Date(),
+            expiresAt: new Date(createdRoom.expiresAt)
+          };
+          
+          const updatedRooms = [...gameRooms, newRoom];
+          setGameRooms(updatedRooms);
+          
+          // 로컬 스토리지에도 저장
+          localStorage.setItem("tempGameRooms", JSON.stringify(updatedRooms));
         }
         
         // 성공 후 초기화
@@ -278,21 +301,23 @@ const AdminDashboardPage = () => {
   
   const handleLogout = async () => {
     try {
-      const response = await adminLogout();
-      
-      if (response.success) {
-        toast({
-          title: "로그아웃 성공",
-          description: "관리자 계정에서 로그아웃되었습니다.",
-        });
-        navigate("/manage");
-      } else {
-        toast({
-          title: "로그아웃 실패",
-          description: response.error || "로그아웃 중 오류가 발생했습니다.",
-          variant: "destructive",
-        });
+      // 서버측 로그아웃 시도
+      try {
+        await adminLogout();
+      } catch (apiError) {
+        console.error("API logout failed, proceeding with client-side logout:", apiError);
       }
+      
+      // 로컬 스토리지 로그인 정보 삭제
+      localStorage.removeItem("isAdminLoggedIn");
+      localStorage.removeItem("adminUsername");
+      
+      toast({
+        title: "로그아웃 성공",
+        description: "관리자 계정에서 로그아웃되었습니다.",
+      });
+      
+      navigate("/manage");
     } catch (error) {
       console.error("Logout error:", error);
       toast({

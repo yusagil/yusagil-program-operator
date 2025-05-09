@@ -18,16 +18,6 @@ const AdminLoginPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // 하드코딩 로그인 확인 (특별 케이스)
-    if (username === "yusagil" && password === "0528") {
-      toast({
-        title: "로그인 성공",
-        description: "관리자 대시보드로 이동합니다.",
-      });
-      navigate("/manage/dashboard");
-      return;
-    }
-    
     // Validate inputs
     if (!username.trim() || !password.trim()) {
       toast({
@@ -41,6 +31,31 @@ const AdminLoginPage = () => {
     setIsLoading(true);
     
     try {
+      // API 호출하기 전에 하드코딩된 값 검증 (개발용)
+      if (username === "yusagil" && password === "0528") {
+        // API 호출 시도
+        try {
+          await adminLogin({ username, password });
+        } catch (apiError) {
+          console.error("API call failed, but proceeding with hardcoded login:", apiError);
+          // API 호출이 실패해도 하드코딩된 로그인은 계속 진행
+        }
+        
+        // 하드코딩된 로그인 성공 처리
+        toast({
+          title: "로그인 성공",
+          description: "관리자 대시보드로 이동합니다.",
+        });
+        
+        // 로컬스토리지에 관리자 상태를 임시 저장
+        localStorage.setItem("isAdminLoggedIn", "true");
+        localStorage.setItem("adminUsername", username);
+        
+        navigate("/manage/dashboard");
+        return;
+      }
+      
+      // 하드코딩된 로그인이 아닌 경우 API 호출
       const response = await adminLogin({ username, password });
       
       if (response.success) {
@@ -48,6 +63,11 @@ const AdminLoginPage = () => {
           title: "로그인 성공",
           description: "관리자 대시보드로 이동합니다.",
         });
+        
+        // 로컬스토리지에 관리자 상태를 임시 저장
+        localStorage.setItem("isAdminLoggedIn", "true");
+        localStorage.setItem("adminUsername", username);
+        
         navigate("/manage/dashboard");
       } else {
         toast({
