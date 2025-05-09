@@ -36,38 +36,27 @@ const AdminDashboardPage = () => {
   const fetchGameRooms = async () => {
     setIsLoading(true);
     try {
-      // 테스트용 로직: API 호출 대신 직접 테스트 게임방 생성
-      setGameRooms([{
-        id: 1,
-        code: "562085",
-        createdAt: new Date(),
-        expiresAt: new Date(Date.now() + (24 * 60 * 60 * 1000))
-      }]);
-      setIsLoading(false);
-      return;
-      
-      // 아래는 원래 구현이지만 세션 문제 때문에 임시로 주석
-      /*
       const response = await getActiveGameRooms();
       
       if (response.success) {
+        // Date 객체로 변환하여 저장
         setGameRooms(response.gameRooms.map(room => ({
           ...room,
           createdAt: new Date(room.createdAt),
           expiresAt: new Date(room.expiresAt)
         })));
       } else {
+        // 오류 메시지 표시
         toast({
-          title: "오류 발생",
+          title: "방 목록 로딩 실패",
           description: response.error || "게임방 정보를 불러올 수 없습니다.",
           variant: "destructive",
         });
       }
-      */
     } catch (error) {
       console.error("Error fetching game rooms:", error);
       toast({
-        title: "오류 발생",
+        title: "네트워크 오류",
         description: "게임방 정보를 불러올 수 없습니다. 네트워크 연결을 확인해주세요.",
         variant: "destructive",
       });
@@ -93,50 +82,48 @@ const AdminDashboardPage = () => {
     setIsCreating(true);
     
     try {
-      // 테스트용 코드: 임의의 6자리 숫자 생성
-      const newCode = Math.floor(100000 + Math.random() * 900000).toString();
-      
-      toast({
-        title: "게임방 생성 완료",
-        description: `게임방 코드: ${newCode}`,
-      });
-      
-      // 새 게임방을 목록에 추가
-      setGameRooms(prevRooms => [
-        ...prevRooms,
-        {
-          id: prevRooms.length + 2,
-          code: newCode,
-          createdAt: new Date(),
-          expiresAt: new Date(Date.now() + (expiryHours * 60 * 60 * 1000))
-        }
-      ]);
-      
-      // 아래는 원래 구현이지만 세션 문제 때문에 임시로 주석
-      /*
+      // API를 통해 실제 DB에 방 생성
       const response = await createGameRoom({ expiryHours });
       
       if (response.success) {
+        // 방 생성 성공 시 성공 메시지 표시
         toast({
           title: "게임방 생성 완료",
           description: `게임방 코드: ${response.gameRoom.code}`,
         });
         
-        // Refresh the game room list
-        fetchGameRooms();
+        // 방 목록 새로고침으로 DB 최신 상태 유지
+        await fetchGameRooms();
+        
+        // 방금 생성한 방이 목록에 있는지 확인 (추가 보장)
+        const createdRoom = response.gameRoom;
+        const roomExists = gameRooms.some(room => room.code === createdRoom.code);
+        
+        if (!roomExists) {
+          // DB에서 가져온 목록에 없으면 로컬에 추가 (임시 대응)
+          setGameRooms(prevRooms => [
+            ...prevRooms,
+            {
+              id: createdRoom.id,
+              code: createdRoom.code,
+              createdAt: new Date(),
+              expiresAt: new Date(createdRoom.expiresAt)
+            }
+          ]);
+        }
       } else {
+        // 오류 메시지를 사용자에게 명확하게 표시
         toast({
           title: "게임방 생성 실패",
           description: response.error || "게임방을 생성할 수 없습니다.",
           variant: "destructive",
         });
       }
-      */
     } catch (error) {
       console.error("Error creating game room:", error);
       toast({
-        title: "오류 발생",
-        description: "게임방을 생성할 수 없습니다. 다시 시도해주세요.",
+        title: "네트워크 오류",
+        description: "서버와 통신 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
         variant: "destructive",
       });
     } finally {
