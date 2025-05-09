@@ -44,10 +44,6 @@ const AdminDashboardPage = () => {
   const [teamConfig, setTeamConfig] = useState<Record<string, number[]>>({
     "Team 1": [1, 2]
   });
-  const [partnerConfig, setPartnerConfig] = useState<Record<string, number>>({
-    "1": 2,
-    "2": 1
-  });
   
   // Load active game rooms
   const fetchGameRooms = async () => {
@@ -86,7 +82,7 @@ const AdminDashboardPage = () => {
     fetchGameRooms();
   }, []);
   
-  // 총 인원 수가 변경되면 팀 구성 및 짝궁 구성을 초기화
+  // 총 인원 수가 변경되면 팀 구성을 초기화
   useEffect(() => {
     // 기본적으로 모든 인원을 한 팀에 배정
     const defaultTeam = Array.from({ length: totalParticipants }, (_, i) => i + 1);
@@ -95,14 +91,6 @@ const AdminDashboardPage = () => {
       "Team 1": defaultTeam
     });
     setTeamCount(1);
-    
-    // 기본 짝궁 구성: 원형으로 연결 (1->2, 2->3, ..., n->1)
-    const newPartnerConfig: Record<string, number> = {};
-    for (let i = 1; i <= totalParticipants; i++) {
-      const nextIndex = i === totalParticipants ? 1 : i + 1;
-      newPartnerConfig[i.toString()] = nextIndex;
-    }
-    setPartnerConfig(newPartnerConfig);
   }, [totalParticipants]);
   
   // 팀 추가
@@ -192,31 +180,7 @@ const AdminDashboardPage = () => {
     }));
   };
   
-  // 짝궁 변경
-  const changePartner = (seatNumber: number, partnerId: number) => {
-    if (seatNumber === partnerId) {
-      toast({
-        title: "짝궁 설정 오류",
-        description: "자기 자신을 짝궁으로 지정할 수 없습니다.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    if (partnerId < 1 || partnerId > totalParticipants) {
-      toast({
-        title: "짝궁 설정 오류",
-        description: `짝궁은 1~${totalParticipants} 범위 내에서 지정해주세요.`,
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    setPartnerConfig(prev => ({
-      ...prev,
-      [seatNumber.toString()]: partnerId
-    }));
-  };
+  // 짝궁 설정 제거
   
   const handleCreateRoom = async () => {
     if (expiryHours < 1 || expiryHours > 72) {
@@ -241,26 +205,22 @@ const AdminDashboardPage = () => {
       return;
     }
     
-    // 모든 참가자가 짝궁이 지정되었는지 확인
-    const assignedPartners = Object.keys(partnerConfig).length;
-    if (assignedPartners !== totalParticipants) {
-      toast({
-        title: "짝궁 설정 오류",
-        description: "모든 참가자에게 짝궁이 지정되어야 합니다.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
     setIsCreating(true);
     
     try {
+      // 로그인 중인지 확인을 위한 더미 파트너 설정 - 짝궁 설정은 사용자가 직접 함
+      const dummyPartnerConfig: Record<string, number> = {};
+      for (let i = 1; i <= totalParticipants; i++) {
+        const nextIndex = i === totalParticipants ? 1 : i + 1;
+        dummyPartnerConfig[i.toString()] = nextIndex;
+      }
+      
       // API를 통해 실제 DB에 방 생성
       const response = await createGameRoom({ 
         expiryHours,
         totalParticipants,
         teamConfig,
-        partnerConfig
+        partnerConfig: dummyPartnerConfig // 더미 데이터 전송 (실제로는 사용자 입력으로 대체됨)
       });
       
       if (response.success) {
@@ -374,10 +334,9 @@ const AdminDashboardPage = () => {
             value={activeTab}
             onValueChange={setActiveTab}
           >
-            <TabsList className="grid w-full grid-cols-3 mb-6">
+            <TabsList className="grid w-full grid-cols-2 mb-6">
               <TabsTrigger value="basic">기본 설정</TabsTrigger>
               <TabsTrigger value="teams">팀 구성</TabsTrigger>
-              <TabsTrigger value="partners">짝궁 설정</TabsTrigger>
             </TabsList>
             
             <TabsContent value="basic" className="space-y-4">
@@ -495,40 +454,7 @@ const AdminDashboardPage = () => {
               ))}
             </TabsContent>
             
-            <TabsContent value="partners" className="space-y-4">
-              <div className="mb-4">
-                <h3 className="text-lg font-medium mb-2">짝궁 설정</h3>
-                <p className="text-sm text-gray-500">
-                  각 참가자의 짝궁(문제를 맞춰야 할 상대)을 지정해주세요.
-                </p>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                {Array.from({ length: totalParticipants }, (_, i) => i + 1).map((seatNumber) => (
-                  <div key={seatNumber} className="space-y-2">
-                    <Label htmlFor={`partner-${seatNumber}`}>
-                      {seatNumber}번 참가자의 짝궁
-                    </Label>
-                    <div className="flex gap-2">
-                      <Input
-                        id={`partner-${seatNumber}`}
-                        type="number"
-                        min="1"
-                        max={totalParticipants}
-                        value={partnerConfig[seatNumber.toString()] || ""}
-                        onChange={(e) => {
-                          const partnerId = parseInt(e.target.value);
-                          if (partnerId) {
-                            changePartner(seatNumber, partnerId);
-                          }
-                        }}
-                        disabled={isCreating}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </TabsContent>
+            {/* 짝궁 설정 탭 제거 */}
           </Tabs>
           
           <div className="flex justify-end mt-6">
