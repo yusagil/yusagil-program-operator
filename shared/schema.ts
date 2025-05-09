@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -9,6 +9,8 @@ export const gameRooms = pgTable("game_rooms", {
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   expiresAt: timestamp("expires_at").notNull(), // Auto-expire after 24 hours
+  totalParticipants: integer("total_participants").default(0), // Total number of participants
+  teamConfig: jsonb("team_config").default('{}'), // JSON configuration for teams
 });
 
 export const insertGameRoomSchema = createInsertSchema(gameRooms).pick({
@@ -107,8 +109,18 @@ export const adminLoginSchema = z.object({
   password: z.string().min(1, "비밀번호를 입력해주세요"),
 });
 
+// 팀 구성 관련 타입 정의
+export const teamMemberSchema = z.array(z.number().int().min(1).max(20));
+export const teamConfigSchema = z.record(z.string(), teamMemberSchema);
+
+// 짝궁 설정 관련 타입 정의 - 각 사용자별 짝궁 매핑 (1 -> 2, 2 -> 3, 3 -> 1 등)
+export const partnerPairingSchema = z.record(z.string(), z.number().int().min(1).max(20));
+
 export const createGameRoomSchema = z.object({
   expiryHours: z.number().int().min(1).max(72).default(24),
+  totalParticipants: z.number().int().min(2).max(20).default(2), // 최소 2명, 최대 20명
+  teamConfig: teamConfigSchema.optional(), // 팀 구성 (Team 1: [1, 2, 3], Team 2: [4, 5, 6] 등)
+  partnerConfig: partnerPairingSchema.optional(), // 짝궁 매핑 배열 
 });
 
 export const answerSchema = z.object({
